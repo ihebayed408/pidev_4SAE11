@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="apiGateway" target="17" />
+      <module name="Eureka" target="17" />
+      <module name="Evaluation" target="17" />
+      <module name="KeyCloak" target="17" />
+      <module name="Offer" target="17" />
+      <module name="planning" target="17" />
+      <module name="Project" target="17" />
+      <module name="review" target="17" />
+      <module name="user" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
