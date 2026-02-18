@@ -1,0 +1,290 @@
+<div class="admin-management-page">
+  <h1>Offer Management</h1>
+  <p class="subtitle">Manage offers (Offer microservice)</p>
+
+  @if (errorMessage) {
+    <div class="error-banner" role="alert">{{ errorMessage }}</div>
+  }
+
+  <app-card>
+    <div class="toolbar">
+      <span class="count">{{ offers.length }} offer(s)</span>
+      <div class="toolbar-actions">
+        <button type="button" class="btn-add" (click)="openAdd()">Add offer</button>
+        <button type="button" class="btn-refresh" (click)="loadOffers()" [disabled]="loading">
+          {{ loading ? 'Loading…' : 'Refresh' }}
+        </button>
+      </div>
+    </div>
+
+    @if (loading && offers.length === 0) {
+      <p class="loading-msg">Loading offers…</p>
+    } @else if (offers.length === 0) {
+      <p class="empty-msg">No offers found.</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Title</th>
+              <th>Freelancer ID</th>
+              <th>Status</th>
+              <th>Domain</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Price</th>
+              <th>Duration</th>
+              <th>Deadline</th>
+              <th>Rating</th>
+              <th>Comm. score</th>
+              <th>Tags</th>
+              <th>Views</th>
+              <th>Featured</th>
+              <th>Active</th>
+              <th>Valid</th>
+              <th>Can receive apps</th>
+              <th>Applications</th>
+              <th>Pending apps</th>
+              <th>Created</th>
+              <th>Updated</th>
+              <th>Published</th>
+              <th>Expired</th>
+              <th>Image URL</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (o of offers; track o.id) {
+              <tr>
+                <td>{{ o.id }}</td>
+                <td>{{ o.title }}</td>
+                <td>{{ o.freelancerId }}</td>
+                <td><span class="status-badge">{{ o.offerStatus }}</span></td>
+                <td>{{ o.domain }}</td>
+                <td>{{ o.category || '—' }}</td>
+                <td>{{ o.description }}</td>
+                <td>{{ o.price | number:'1.2-2' }}</td>
+                <td>{{ o.durationType }}</td>
+                <td>{{ o.deadline | date:'yyyy-MM-dd' }}</td>
+                <td>{{ o.rating != null ? (o.rating | number:'1.1-1') : '—' }}</td>
+                <td>{{ o.communicationScore != null ? (o.communicationScore | number:'1.1-1') : '—' }}</td>
+                <td>{{ o.tags || '—' }}</td>
+                <td>{{ o.viewsCount ?? 0 }}</td>
+                <td>{{ o.isFeatured ? 'Yes' : 'No' }}</td>
+                <td>{{ o.isActive ? 'Yes' : 'No' }}</td>
+                <td>{{ o.isValid ? 'Yes' : 'No' }}</td>
+                <td>{{ o.canReceiveApplications ? 'Yes' : 'No' }}</td>
+                <td>{{ o.applicationsCount ?? 0 }}</td>
+                <td>{{ o.pendingApplicationsCount ?? 0 }}</td>
+                <td>{{ o.createdAt | date:'short' }}</td>
+                <td>{{ o.updatedAt | date:'short' }}</td>
+                <td>{{ o.publishedAt | date:'short' }}</td>
+                <td>{{ o.expiredAt | date:'short' }}</td>
+                <td>
+                  @if (o.imageUrl) {
+                    <a [href]="o.imageUrl" target="_blank" rel="noopener">Open</a>
+                  } @else {
+                    <span>—</span>
+                  }
+                </td>
+                <td class="actions">
+                  <button type="button" class="btn-action btn-edit" (click)="openEdit(o)">Edit</button>
+                  <button type="button" class="btn-action btn-delete" (click)="openDeleteModal(o)">Delete</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </app-card>
+
+  @if (addModalOpen) {
+    <div class="modal-overlay" (click)="closeAdd()">
+      <div class="modal modal--form" (click)="$event.stopPropagation()">
+        <h3>Add offer</h3>
+        <form [formGroup]="addForm" (ngSubmit)="saveAdd()">
+          <div class="field">
+            <label for="add-freelancerId">Freelancer ID</label>
+            <input id="add-freelancerId" type="number" formControlName="freelancerId" min="1" />
+            @if (addForm.get('freelancerId')?.invalid && addForm.get('freelancerId')?.touched) {
+              <span class="field-error">Required, min 1.</span>
+            }
+          </div>
+          <div class="field">
+            <label for="add-title">Title</label>
+            <input id="add-title" formControlName="title" />
+            @if (addForm.get('title')?.invalid && addForm.get('title')?.touched) {
+              <span class="field-error">Required.</span>
+            }
+          </div>
+          <div class="field">
+            <label for="add-domain">Domain</label>
+            <input id="add-domain" formControlName="domain" />
+            @if (addForm.get('domain')?.invalid && addForm.get('domain')?.touched) {
+              <span class="field-error">Required.</span>
+            }
+          </div>
+          <div class="field">
+            <label for="add-description">Description</label>
+            <textarea id="add-description" formControlName="description" rows="3"></textarea>
+            @if (addForm.get('description')?.invalid && addForm.get('description')?.touched) {
+              <span class="field-error">Required, min 20 characters.</span>
+            }
+          </div>
+          <div class="field">
+            <label for="add-price">Price</label>
+            <input id="add-price" type="number" formControlName="price" min="0.01" step="0.01" />
+            @if (addForm.get('price')?.invalid && addForm.get('price')?.touched) {
+              <span class="field-error">Required, min 0.01.</span>
+            }
+          </div>
+          <div class="field">
+            <label for="add-durationType">Duration type</label>
+            <select id="add-durationType" formControlName="durationType">
+              @for (d of durationTypes; track d) {
+                <option [value]="d">{{ d }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="add-deadline">Deadline (optional)</label>
+            <input id="add-deadline" type="text" formControlName="deadline" placeholder="e.g. 2025-12-31" />
+          </div>
+          <div class="field">
+            <label for="add-category">Category (optional)</label>
+            <input id="add-category" formControlName="category" />
+          </div>
+          <div class="field">
+            <label for="add-tags">Tags (optional)</label>
+            <input id="add-tags" formControlName="tags" />
+          </div>
+          <div class="field">
+            <label for="add-imageUrl">Image URL (optional)</label>
+            <input id="add-imageUrl" type="url" formControlName="imageUrl" />
+          </div>
+          <div class="field checkbox">
+            <label>
+              <input type="checkbox" formControlName="isFeatured" />
+              Featured
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="closeAdd()" [disabled]="adding">Cancel</button>
+            <button type="submit" class="btn-primary" [disabled]="addForm.invalid || adding">
+              {{ adding ? 'Creating…' : 'Create offer' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (editingOffer) {
+    <div class="modal-overlay" (click)="closeEdit()">
+      <div class="modal modal--form" (click)="$event.stopPropagation()">
+        <h3>Edit offer</h3>
+        <p class="modal-hint">ID: {{ editingOffer.id }}</p>
+        <form [formGroup]="editForm" (ngSubmit)="saveEdit()">
+          <div class="field">
+            <label for="edit-freelancerId">Freelancer ID</label>
+            <input id="edit-freelancerId" type="number" formControlName="freelancerId" min="1" />
+            @if (editForm.get('freelancerId')?.invalid && editForm.get('freelancerId')?.touched) {
+              <span class="field-error">Required, min 1.</span>
+            }
+          </div>
+          <div class="field">
+            <label for="edit-title">Title</label>
+            <input id="edit-title" formControlName="title" />
+            @if (editForm.get('title')?.invalid && editForm.get('title')?.touched) {
+              <span class="field-error">Required.</span>
+            }
+          </div>
+          <div class="field">
+            <label for="edit-domain">Domain</label>
+            <input id="edit-domain" formControlName="domain" />
+            @if (editForm.get('domain')?.invalid && editForm.get('domain')?.touched) {
+              <span class="field-error">Required.</span>
+            }
+          </div>
+          <div class="field">
+            <label for="edit-description">Description</label>
+            <textarea id="edit-description" formControlName="description" rows="3"></textarea>
+            @if (editForm.get('description')?.invalid && editForm.get('description')?.touched) {
+              <span class="field-error">Required, min 20 characters.</span>
+            }
+          </div>
+          <div class="field">
+            <label for="edit-price">Price</label>
+            <input id="edit-price" type="number" formControlName="price" min="0.01" step="0.01" />
+            @if (editForm.get('price')?.invalid && editForm.get('price')?.touched) {
+              <span class="field-error">Required, min 0.01.</span>
+            }
+          </div>
+          <div class="field">
+            <label for="edit-durationType">Duration type</label>
+            <select id="edit-durationType" formControlName="durationType">
+              @for (d of durationTypes; track d) {
+                <option [value]="d">{{ d }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="edit-deadline">Deadline (optional)</label>
+            <input id="edit-deadline" type="text" formControlName="deadline" />
+          </div>
+          <div class="field">
+            <label for="edit-category">Category (optional)</label>
+            <input id="edit-category" formControlName="category" />
+          </div>
+          <div class="field">
+            <label for="edit-tags">Tags (optional)</label>
+            <input id="edit-tags" formControlName="tags" />
+          </div>
+          <div class="field">
+            <label for="edit-imageUrl">Image URL (optional)</label>
+            <input id="edit-imageUrl" type="url" formControlName="imageUrl" />
+          </div>
+          <div class="field checkbox">
+            <label>
+              <input type="checkbox" formControlName="isFeatured" />
+              Featured
+            </label>
+          </div>
+          <div class="field">
+            <label for="edit-offerStatus">Status (display)</label>
+            <select id="edit-offerStatus" formControlName="offerStatus">
+              @for (s of offerStatuses; track s) {
+                <option [value]="s">{{ s }}</option>
+              }
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="closeEdit()" [disabled]="saving">Cancel</button>
+            <button type="submit" class="btn-primary" [disabled]="editForm.invalid || saving">
+              {{ saving ? 'Saving…' : 'Save' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (offerToDelete) {
+    <div class="modal-overlay" (click)="closeDeleteModal()">
+      <div class="modal modal--confirm" (click)="$event.stopPropagation()">
+        <h3>Delete offer</h3>
+        <p class="modal-message">
+          Are you sure you want to delete <strong>{{ offerToDelete.title }}</strong>? This action cannot be undone.
+        </p>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeDeleteModal()" [disabled]="deleting">Cancel</button>
+          <button type="button" class="btn-danger" (click)="doDelete()" [disabled]="deleting">
+            {{ deleting ? 'Deleting…' : 'Delete' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

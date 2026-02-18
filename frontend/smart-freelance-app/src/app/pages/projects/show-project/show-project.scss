@@ -180,6 +180,22 @@
   box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
 }
 
+.project-details .actions .btn-review {
+  background: #10b981;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.project-details .actions .btn-review:hover {
+  background: #059669;
+  transform: translateY(-2px);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .project-details {

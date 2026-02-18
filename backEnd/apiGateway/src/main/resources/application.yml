@@ -60,8 +60,9 @@ spring:
           filters:
             - StripPrefix=1
 
+        # Review: direct URL so it works without Eureka (service runs on 8085)
         - id: review
-          uri: lb://review
+          uri: http://localhost:8085
           predicates:
             - Path=/review/**
           filters:

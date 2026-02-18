@@ -1,0 +1,41 @@
+<div class="show-offer-page" *ngIf="offer">
+  <div class="back-row">
+    <a routerLink="/dashboard/my-offers" class="btn-back">Back to my offers</a>
+  </div>
+  <div class="offer-detail card">
+    <div class="offer-header">
+      <h1>{{ offer.title }}</h1>
+      <span class="status-badge">{{ offer.offerStatus }}</span>
+    </div>
+    <p class="domain">{{ offer.domain }}</p>
+    <p class="description">{{ offer.description }}</p>
+    <div class="meta">
+      <span class="price">{{ offer.price | number:'1.2-2' }} ({{ offer.durationType }})</span>
+      <span *ngIf="offer.deadline">Deadline: {{ offer.deadline }}</span>
+      <span *ngIf="offer.pendingApplicationsCount != null">{{ offer.pendingApplicationsCount }} pending</span>
+    </div>
+  </div>
+  <div class="applications-section">
+    <h2>Applications</h2>
+    <p class="loading-msg" *ngIf="loadingApps">Loading applications...</p>
+    <p class="empty-msg" *ngIf="!loadingApps && applications.length === 0">No applications yet.</p>
+    <div class="applications-list" *ngIf="!loadingApps && applications.length > 0">
+      <div class="app-card" *ngFor="let app of applications">
+        <div class="app-main">
+          <p class="app-message">{{ app.message }}</p>
+          <p class="app-meta">Proposed budget: {{ app.proposedBudget | number:'1.2-2' }} - Applied {{ formatDate(app.appliedAt) }}</p>
+          <span class="app-status">{{ app.status }}</span>
+        </div>
+        <div class="app-actions" *ngIf="app.status === 'PENDING'">
+          <button type="button" class="btn-accept" (click)="accept(app)" [disabled]="actioning">Accept</button>
+          <button type="button" class="btn-reject" (click)="reject(app)" [disabled]="actioning">Reject</button>
+        </div>
+        <div class="app-actions" *ngIf="app.status === 'ACCEPTED'">
+          <button type="button" class="btn-create-project" (click)="createProject(app)">Create project</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="error-msg" *ngIf="errorMessage">{{ errorMessage }}</p>
+<p class="loading-msg" *ngIf="loading && !offer">Loading offer...</p>

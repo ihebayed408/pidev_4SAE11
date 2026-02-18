@@ -72,14 +72,13 @@ export class UserManagement implements OnInit {
       error: (err) => {
         const status = err?.status;
         const msg = err?.error?.message ?? err?.error?.error;
-        // On 401 the interceptor redirects to login; avoid updating view state to prevent NG0100
-        if (status === 401) {
-          this.loading = false;
-          return;
-        }
-        // Defer other error updates to next tick to avoid ExpressionChangedAfterItHasBeenCheckedError
+        // Defer all view updates to next tick to avoid ExpressionChangedAfterItHasBeenCheckedError (NG0100)
         setTimeout(() => {
           this.loading = false;
+          if (status === 401) {
+            // Interceptor will redirect to login; no need to set errorMessage
+            return;
+          }
           if (typeof msg === 'string' && msg.length > 0) {
             this.errorMessage = msg;
           } else {
@@ -91,6 +90,7 @@ export class UserManagement implements OnInit {
               this.errorMessage = 'Failed to load users. Check your connection and try again.';
             }
           }
+          this.cdr.detectChanges();
         }, 0);
       },
     });

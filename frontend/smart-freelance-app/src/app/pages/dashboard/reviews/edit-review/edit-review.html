@@ -1,0 +1,31 @@
+<div class="review-form-page">
+  <h1 class="page-title">Edit review</h1>
+  <p class="subtitle" *ngIf="revieweeLabel">Review for {{ revieweeLabel }}</p>
+  <div class="error-banner" role="alert" *ngIf="submitError">{{ submitError }}</div>
+  <div class="success-banner" *ngIf="submitSuccess">Review updated. Redirecting...</div>
+  <p class="loading-msg" *ngIf="loading">Loading review...</p>
+  <form class="review-form" [formGroup]="form" (ngSubmit)="submit()" *ngIf="!loading">
+    <div class="field">
+      <label for="rating">Rating (required)</label>
+      <select id="rating" formControlName="rating" class="form-select">
+        <option [ngValue]="null">Select rating 1-5</option>
+        <option [ngValue]="1">1 - Poor</option>
+        <option [ngValue]="2">2 - Fair</option>
+        <option [ngValue]="3">3 - Good</option>
+        <option [ngValue]="4">4 - Very good</option>
+        <option [ngValue]="5">5 - Excellent</option>
+      </select>
+      <span class="field-error" *ngIf="form.get('rating')?.invalid && form.get('rating')?.touched">Please select a rating from 1 to 5.</span>
+    </div>
+    <div class="field">
+      <label for="comment">Comment (optional, max 1000 characters)</label>
+      <textarea id="comment" formControlName="comment" rows="4"></textarea>
+      <span class="field-hint">{{ (form.get('comment')?.value || '').length }}/1000</span>
+      <span class="field-error" *ngIf="form.get('comment')?.invalid && form.get('comment')?.touched">Max 1000 characters.</span>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" (click)="cancel()" [disabled]="isSubmitting">Cancel</button>
+      <button type="submit" class="btn-primary" [disabled]="form.invalid || isSubmitting">Save</button>
+    </div>
+  </form>
+</div>

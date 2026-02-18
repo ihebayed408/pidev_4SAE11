@@ -1,0 +1,49 @@
+<div class="offer-detail-page" *ngIf="offer">
+  <div class="back-row">
+    <a routerLink="/dashboard/browse-offers" class="btn-back">Back to offers</a>
+  </div>
+  <div class="offer-card">
+    <h1>{{ offer.title }}</h1>
+    <p class="domain">{{ offer.domain }}</p>
+    <p class="description">{{ offer.description }}</p>
+    <div class="meta">
+      <span class="price">{{ offer.price | number:'1.2-2' }} ({{ offer.durationType }})</span>
+      <span *ngIf="offer.deadline">Deadline: {{ offer.deadline }}</span>
+    </div>
+    <button type="button" class="btn-apply" (click)="openApplyModal()" *ngIf="offer.canReceiveApplications">Apply for this offer</button>
+    <p *ngIf="!offer.canReceiveApplications" class="closed-msg">This offer is not accepting applications.</p>
+  </div>
+
+  <div class="modal-overlay" *ngIf="applyModalOpen" (click)="closeApplyModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Apply for {{ offer.title }}</h3>
+      <form [formGroup]="form" (ngSubmit)="submitApplication()">
+        <div class="field">
+          <label for="message">Message <span class="required">*</span></label>
+          <textarea id="message" formControlName="message" rows="4" placeholder="Introduce yourself and why you want this service (min 20 characters)."></textarea>
+          <span class="field-error" *ngIf="form.get('message')?.invalid && form.get('message')?.touched">Message is required (20-2000 characters).</span>
+        </div>
+        <div class="field">
+          <label for="proposedBudget">Your budget <span class="required">*</span></label>
+          <input id="proposedBudget" type="number" formControlName="proposedBudget" min="0.01" step="0.01" />
+          <span class="field-error" *ngIf="form.get('proposedBudget')?.invalid && form.get('proposedBudget')?.touched">Valid budget required.</span>
+        </div>
+        <div class="field">
+          <label for="estimatedDuration">Estimated duration (days)</label>
+          <input id="estimatedDuration" type="number" formControlName="estimatedDuration" min="1" />
+        </div>
+        <div class="field">
+          <label for="portfolioUrl">Portfolio URL (optional)</label>
+          <input id="portfolioUrl" type="url" formControlName="portfolioUrl" placeholder="https://..." />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeApplyModal()" [disabled]="submitting">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="form.invalid || submitting">{{ submitting ? 'Submitting...' : 'Submit application' }}</button>
+        </div>
+      </form>
+      <p class="error-msg" *ngIf="submitError">{{ submitError }}</p>
+    </div>
+  </div>
+</div>
+<p *ngIf="!offer && !loading">Offer not found.</p>
+<p *ngIf="loading">Loading...</p>

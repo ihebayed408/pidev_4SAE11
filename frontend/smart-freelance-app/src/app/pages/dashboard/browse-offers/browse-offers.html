@@ -1,0 +1,28 @@
+<div class="browse-offers-page">
+  <h1>Browse Offers</h1>
+  <p class="subtitle">Find freelancer services and apply for the one that fits your needs.</p>
+  <div class="toolbar">
+    <span class="count">{{ totalElements }} offer(s)</span>
+    <button type="button" class="btn-refresh" (click)="load()" [disabled]="loading">{{ loading ? 'Loading...' : 'Refresh' }}</button>
+  </div>
+  <p class="loading-msg" *ngIf="loading && offers.length === 0">Loading offers...</p>
+  <p class="empty-msg" *ngIf="!loading && offers.length === 0">No offers available.</p>
+  <div class="offers-grid" *ngIf="offers.length > 0">
+    <div class="offer-card" *ngFor="let o of offers">
+      <div class="offer-content">
+        <h3 class="offer-title">{{ o.title }}</h3>
+        <span class="offer-domain">{{ o.domain }}</span>
+        <p class="offer-desc">{{ (o.description | slice:0:100) }}{{ ((o.description || '').length) > 100 ? '...' : '' }}</p>
+        <div class="offer-meta">
+          <span class="price">{{ o.price | number:'1.2-2' }} ({{ o.durationType }})</span>
+        </div>
+        <a [routerLink]="['/dashboard/browse-offers', o.id]" class="btn-view">View and Apply</a>
+      </div>
+    </div>
+  </div>
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button type="button" (click)="prev()" [disabled]="page <= 0">Previous</button>
+    <span>Page {{ page + 1 }} of {{ totalPages }}</span>
+    <button type="button" (click)="next()" [disabled]="page >= totalPages - 1">Next</button>
+  </div>
+</div>

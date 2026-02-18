@@ -15,4 +15,6 @@ public interface IProjectService {
     List<Project> getAllProjects();
 
     List<Project> getProjectsByClientId(Long clientId);
+
+    List<Project> getProjectsByFreelancerId(Long freelancerId);
 }

@@ -27,6 +27,8 @@ public class SecurityConfig {
                         boolean match = exchange.getRequest().getMethod() == HttpMethod.OPTIONS
                                 || path.startsWith("/planning/")
                                 || path.startsWith("/project/")
+                                || path.startsWith("/offer/")
+                                || path.startsWith("/review/")
                                 || path.startsWith("/keycloak-auth/")
                                 || path.startsWith("/user/api/users/email/")
                                 || path.startsWith("/user/api/users/avatars/")

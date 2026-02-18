@@ -117,19 +117,37 @@ export class ListProjects implements OnInit, OnDestroy {
     }
 
     const user$ = this.userService.getByEmail(email).pipe(catchError(() => of(null)));
-    const projects$ = this.projectService.getAllProjects().pipe(map((res) => toProjectList(res)));
 
-    forkJoin({ user: user$, projects: projects$ }).subscribe({
-      next: ({ user, projects }) => {
-        const list = Array.isArray(projects) ? projects : toProjectList(projects);
-        const clientId =
-          user?.role === 'CLIENT' && user?.id != null ? user.id : null;
-        this.projects =
-          clientId != null
-            ? list.filter((p) => Number(p.clientId) === Number(clientId))
-            : list;
-        this.isLoading = false;
-        this.cdr.detectChanges();
+    forkJoin({ user: user$ }).subscribe({
+      next: ({ user }) => {
+        if (!user?.id) {
+          this.projects = [];
+          this.isLoading = false;
+          this.cdr.detectChanges();
+          return;
+        }
+        let projects$;
+        if (user.role === 'CLIENT') {
+          projects$ = this.projectService.getByClientId(user.id).pipe(map((res) => toProjectList(res)));
+        } else if (user.role === 'FREELANCER') {
+          projects$ = this.projectService.getByFreelancerId(user.id).pipe(map((res) => toProjectList(res)));
+        } else {
+          projects$ = this.projectService.getAllProjects().pipe(map((res) => toProjectList(res)));
+        }
+        projects$.subscribe({
+          next: (list) => {
+            this.projects = Array.isArray(list) ? list : toProjectList(list);
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          },
+          error: (err: HttpErrorResponse) => {
+            this.errorMessage = this.isTimeoutError(err)
+              ? 'Request timed out. Use Refresh to try again.'
+              : 'Failed to load projects.';
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          },
+        });
       },
       error: (err: HttpErrorResponse) => {
         this.errorMessage = this.isTimeoutError(err)

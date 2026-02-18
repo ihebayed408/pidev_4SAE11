@@ -1,0 +1,21 @@
+<div class="my-applications-page">
+  <h1>My Offer Applications</h1>
+  <p class="subtitle">Applications you submitted to freelancer offers.</p>
+  <div class="toolbar">
+    <span class="count">{{ applications.length }} application(s)</span>
+    <button type="button" class="btn-refresh" (click)="load()" [disabled]="loading">{{ loading ? 'Loading...' : 'Refresh' }}</button>
+  </div>
+  <p class="loading-msg" *ngIf="loading && applications.length === 0">Loading...</p>
+  <p class="empty-msg" *ngIf="!loading && applications.length === 0">You have not applied to any offers yet. Browse offers to apply.</p>
+  <div class="applications-list" *ngIf="applications.length > 0">
+    <div class="app-card" *ngFor="let app of applications">
+      <div class="app-main">
+        <h3 class="offer-title">{{ app.offerTitle || 'Offer #' + app.offerId }}</h3>
+        <p class="app-message">{{ app.message }}</p>
+        <p class="app-meta">Proposed budget: {{ app.proposedBudget | number:'1.2-2' }} - Applied {{ formatDate(app.appliedAt) }}</p>
+        <span class="app-status" [ngClass]="'status-' + app.status">{{ app.status }}</span>
+      </div>
+      <a [routerLink]="['/dashboard/browse-offers', app.offerId]" class="btn-view">View offer</a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+<div class="reviews-container">
+  <div class="reviews-header">
+    <h2 class="section-title">Reviews about me</h2>
+  </div>
+  <div class="toolbar">
+    <span class="toolbar-count">{{ reviews.length }} review(s)</span>
+    <button type="button" class="btn-refresh" (click)="load()" [disabled]="loading">Refresh</button>
+  </div>
+  <div class="loading-state" *ngIf="loading"><p>Loading reviews...</p></div>
+  <div class="error-state" *ngIf="errorMessage && !loading">
+    <p class="error">{{ errorMessage }}</p>
+    <button (click)="load()" class="btn btn--retry">Try Again</button>
+  </div>
+  <div class="reviews-grid" *ngIf="!loading && !errorMessage && reviews.length > 0">
+    <div class="review-card" *ngFor="let r of reviews">
+      <div class="review-content">
+        <div class="review-header">
+          <h3 class="review-title">From {{ getReviewerName(r) }}</h3>
+          <span class="rating-badge">{{ r.rating }}/5</span>
+        </div>
+        <p class="review-meta">Project: {{ getProjectTitle(r) }}</p>
+        <p class="review-comment" *ngIf="r.comment">{{ r.comment }}</p>
+        <p class="review-comment empty" *ngIf="!r.comment">No comment</p>
+        <p class="review-date" *ngIf="r.createdAt">{{ r.createdAt | date:'medium' }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="empty-state" *ngIf="!loading && !errorMessage && reviews.length === 0">
+    <p>No one has left you a review yet.</p>
+  </div>
+</div>

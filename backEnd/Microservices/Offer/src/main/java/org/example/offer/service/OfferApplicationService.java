@@ -47,9 +47,15 @@ public class OfferApplicationService {
         // Validation métier
         validateApplication(offer, request.getClientId());
 
-        // Créer la candidature
-        OfferApplication application = modelMapper.map(request, OfferApplication.class);
+        // Créer la candidature (manual mapping to avoid ModelMapper confusing setId with getOfferId/getClientId)
+        OfferApplication application = new OfferApplication();
         application.setOffer(offer);
+        application.setClientId(request.getClientId());
+        application.setMessage(request.getMessage());
+        application.setProposedBudget(request.getProposedBudget());
+        application.setPortfolioUrl(request.getPortfolioUrl());
+        application.setAttachmentUrl(request.getAttachmentUrl());
+        application.setEstimatedDuration(request.getEstimatedDuration());
         application.setStatus(ApplicationStatus.PENDING);
 
         OfferApplication savedApplication = applicationRepository.save(application);

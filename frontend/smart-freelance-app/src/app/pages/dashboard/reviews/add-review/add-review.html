@@ -1,0 +1,44 @@
+<div class="review-form-page">
+  <h1 class="page-title">Leave a review</h1>
+  <p class="subtitle">Rate and comment on someone you worked with on a project.</p>
+  <div class="error-banner" role="alert" *ngIf="submitError">{{ submitError }}</div>
+  <div class="success-banner" *ngIf="submitSuccess">Review submitted successfully. Redirecting...</div>
+  <form class="review-form" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="field" *ngIf="!fromProject && projectOptions.length > 0">
+      <label for="projectId">Project (required)</label>
+      <select id="projectId" formControlName="projectId" class="form-select">
+        <option [ngValue]="null">Select a project</option>
+        <option *ngFor="let opt of projectOptions" [ngValue]="opt.project.id">{{ opt.label }}</option>
+      </select>
+      <span class="field-error" *ngIf="form.get('projectId')?.invalid && form.get('projectId')?.touched">Please select a project.</span>
+    </div>
+    <div class="field" *ngIf="fromProject && revieweeLabel">
+      <p class="reviewee-info">You are reviewing <strong>{{ revieweeLabel }}</strong> for this project.</p>
+    </div>
+    <div class="field" *ngIf="!fromProject && projectOptions.length === 0 && currentUser">
+      <p class="no-projects">No projects available to review. Complete a project with a client or freelancer first.</p>
+    </div>
+    <div class="field">
+      <label for="rating">Rating (required)</label>
+      <select id="rating" formControlName="rating" class="form-select">
+        <option [ngValue]="null">Select rating 1-5</option>
+        <option [ngValue]="1">1 - Poor</option>
+        <option [ngValue]="2">2 - Fair</option>
+        <option [ngValue]="3">3 - Good</option>
+        <option [ngValue]="4">4 - Very good</option>
+        <option [ngValue]="5">5 - Excellent</option>
+      </select>
+      <span class="field-error" *ngIf="form.get('rating')?.invalid && form.get('rating')?.touched">Please select a rating from 1 to 5.</span>
+    </div>
+    <div class="field">
+      <label for="comment">Comment (optional, max 1000 characters)</label>
+      <textarea id="comment" formControlName="comment" rows="4"></textarea>
+      <span class="field-hint">{{ (form.get('comment')?.value || '').length }}/1000</span>
+      <span class="field-error" *ngIf="form.get('comment')?.invalid && form.get('comment')?.touched">Max 1000 characters.</span>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" (click)="cancel()" [disabled]="isSubmitting">Cancel</button>
+      <button type="submit" class="btn-primary" [disabled]="form.invalid || isSubmitting || (!fromProject && projectOptions.length === 0)">{{ isSubmitting ? 'Submitting…' : 'Submit review' }}</button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,98 @@
+<div class="offers-container">
+  <div class="offers-header">
+    <h2 class="section-title">My Offers</h2>
+    <a routerLink="/dashboard/my-offers/add" class="btn btn--add-offer">+ Add Offer</a>
+  </div>
+
+  <div class="toolbar">
+    <span class="toolbar-count">{{ offers.length }} offer(s)</span>
+    <div class="toolbar-actions">
+      <button type="button" class="btn-refresh" (click)="loadOffers()" [disabled]="loading">
+        {{ loading ? 'Loading…' : 'Refresh' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <p>Loading offers...</p>
+  </div>
+
+  <div class="error-state" *ngIf="errorMessage && !loading">
+    <p class="error">{{ errorMessage }}</p>
+    <button (click)="loadOffers()" class="btn btn--retry">Try Again</button>
+  </div>
+
+  <div class="offers-grid" *ngIf="!loading && !errorMessage && offers.length > 0">
+    <div class="offer-card" *ngFor="let offer of offers">
+      <div class="offer-content">
+        <div class="offer-header">
+          <h3 class="offer-title">{{ offer.title }}</h3>
+          <span
+            class="offer-status"
+            [ngClass]="{
+              'status-draft': offer.offerStatus === 'DRAFT',
+              'status-available': offer.offerStatus === 'AVAILABLE',
+              'status-in-progress': offer.offerStatus === 'IN_PROGRESS',
+              'status-accepted': offer.offerStatus === 'ACCEPTED',
+              'status-closed': offer.offerStatus === 'CLOSED' || offer.offerStatus === 'EXPIRED'
+            }"
+          >
+            {{ offer.offerStatus }}
+          </span>
+        </div>
+        <span class="offer-domain">{{ offer.domain }}</span>
+        <p class="offer-description">{{ (offer.description | slice:0:120) }}{{ ((offer.description || '').length) > 120 ? '…' : '' }}</p>
+        <div class="offer-meta">
+          <span class="price">{{ offer.price | number:'1.2-2' }} ({{ offer.durationType }})</span>
+          <span *ngIf="offer.pendingApplicationsCount != null" class="applications">{{ offer.pendingApplicationsCount }} pending</span>
+        </div>
+        <div class="offer-actions">
+          <a [routerLink]="['/dashboard/my-offers', offer.id, 'show']" class="btn btn--info">View</a>
+          <a *ngIf="offer.offerStatus === 'DRAFT'" [routerLink]="['/dashboard/my-offers', offer.id, 'edit']" class="btn btn--update">Edit</a>
+          <button *ngIf="offer.offerStatus === 'DRAFT'" (click)="openPublishModal(offer)" class="btn btn--publish">Publish</button>
+          <button (click)="openDeleteModal(offer)" class="btn btn--delete">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && !errorMessage && offers.length === 0">
+    <p>No offers yet.</p>
+    <a routerLink="/dashboard/my-offers/add" class="btn btn--add-offer">Create your first offer</a>
+  </div>
+
+  @if (offerToDelete) {
+    <div class="modal-overlay" (click)="closeDeleteModal()">
+      <div class="modal modal--confirm" (click)="$event.stopPropagation()">
+        <h3>Delete offer</h3>
+        <p class="modal-message">
+          Are you sure you want to delete <strong>{{ offerToDelete.title }}</strong>?
+          This action cannot be undone.
+        </p>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeDeleteModal()" [disabled]="deleting">Cancel</button>
+          <button type="button" class="btn-danger" (click)="doDelete()" [disabled]="deleting">
+            {{ deleting ? 'Deleting…' : 'Delete' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (offerToPublish) {
+    <div class="modal-overlay" (click)="closePublishModal()">
+      <div class="modal modal--confirm" (click)="$event.stopPropagation()">
+        <h3>Publish offer</h3>
+        <p class="modal-message">
+          Publish <strong>{{ offerToPublish.title }}</strong> so clients can see and apply?
+        </p>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closePublishModal()" [disabled]="publishing">Cancel</button>
+          <button type="button" class="btn-primary" (click)="doPublish()" [disabled]="publishing">
+            {{ publishing ? 'Publishing…' : 'Publish' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

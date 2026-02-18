@@ -60,10 +60,11 @@
       </ng-template>
     </div>
 
-    <!-- Actions: Back + Edit -->
+    <!-- Actions: Back + Edit + Leave review -->
     <div class="actions">
-      <a routerLink="../.." class="btn-back">← Back to projects</a>
-      <a [routerLink]="['..', 'edit']" class="btn-edit">Edit project</a>
+      <a routerLink="/dashboard/my-projects" class="btn-back">← Back to projects</a>
+      <a [routerLink]="['/dashboard/my-projects', project.id, 'edit']" class="btn-edit">Edit project</a>
+      <button type="button" class="btn-review" *ngIf="canLeaveReview" (click)="leaveReview()">Leave a review</button>
     </div>
 
   </div>

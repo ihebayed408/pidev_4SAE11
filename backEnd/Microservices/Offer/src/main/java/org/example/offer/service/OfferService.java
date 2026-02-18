@@ -9,6 +9,7 @@ import org.example.offer.dto.response.OfferResponse;
 import org.example.offer.dto.response.OfferStatsResponse;
 import org.example.offer.entity.ApplicationStatus;
 import org.example.offer.entity.Offer;
+import org.example.offer.entity.OfferApplication;
 import org.example.offer.entity.OfferStatus;
 import org.example.offer.exception.BadRequestException;
 import org.example.offer.exception.ResourceNotFoundException;
@@ -47,6 +48,25 @@ public class OfferService {
 
         Offer offer = modelMapper.map(request, Offer.class);
         offer.setOfferStatus(OfferStatus.DRAFT);
+        // Ensure non-null defaults so persist does not fail (ModelMapper may set null from request)
+        if (offer.getIsFeatured() == null) {
+            offer.setIsFeatured(false);
+        }
+        if (offer.getIsActive() == null) {
+            offer.setIsActive(true);
+        }
+        if (offer.getViewsCount() == null) {
+            offer.setViewsCount(0);
+        }
+        if (offer.getRating() == null) {
+            offer.setRating(BigDecimal.ZERO);
+        }
+        if (offer.getCommunicationScore() == null) {
+            offer.setCommunicationScore(BigDecimal.ZERO);
+        }
+        if (offer.getApplications() == null) {
+            offer.setApplications(new ArrayList<OfferApplication>());
+        }
 
         Offer savedOffer = offerRepository.save(offer);
         log.info("Offer created successfully with ID: {}", savedOffer.getId());
@@ -230,11 +250,15 @@ public class OfferService {
         offer.setDescription(request.getDescription());
         offer.setPrice(request.getPrice());
         offer.setDurationType(request.getDurationType());
-        offer.setDeadline(request.getDeadline());
+        if (request.getDeadline() != null) {
+            offer.setDeadline(request.getDeadline());
+        }
         offer.setCategory(request.getCategory());
         offer.setTags(request.getTags());
         offer.setImageUrl(request.getImageUrl());
-        offer.setProjectStatusId(request.getProjectStatusId());
+        if (request.getProjectStatusId() != null) {
+            offer.setProjectStatusId(request.getProjectStatusId());
+        }
 
         if (request.getRating() != null) {
             offer.setRating(request.getRating());

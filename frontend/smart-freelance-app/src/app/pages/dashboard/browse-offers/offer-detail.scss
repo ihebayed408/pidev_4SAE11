@@ -1,0 +1,188 @@
+// Matches list-projects / show-offer container, card, and modal styles
+
+.offer-detail-page {
+  max-width: 720px;
+  padding: 4rem 2rem;
+  margin: 0 auto;
+
+  .back-row {
+    margin-bottom: 1rem;
+  }
+
+  .btn-back {
+    color: #475569;
+    font-size: 0.875rem;
+    text-decoration: none;
+  }
+
+  .btn-back:hover {
+    text-decoration: underline;
+  }
+
+  .offer-card {
+    padding: 1.5rem 2rem;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: 1.75rem;
+      color: #1e293b;
+    }
+
+    .domain {
+      color: #64748b;
+      margin: 0 0 1rem;
+      font-size: 0.875rem;
+    }
+
+    .description {
+      line-height: 1.6;
+      margin-bottom: 1rem;
+      color: #334155;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.875rem;
+      color: #64748b;
+
+      .price {
+        font-weight: 600;
+        color: #1e293b;
+      }
+    }
+
+    .btn-apply {
+      padding: 0.65rem 1.35rem;
+      background: #10b981;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.94rem;
+
+      &:hover {
+        background: #059669;
+      }
+    }
+
+    .closed-msg {
+      color: #64748b;
+    }
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1.5rem;
+  }
+
+  .modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+
+    h3 {
+      margin: 0 0 1rem;
+      font-size: 1.25rem;
+    }
+
+    .field {
+      margin-bottom: 1rem;
+
+      label {
+        display: block;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: #334155;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        box-sizing: border-box;
+
+        &:focus {
+          outline: none;
+          border-color: #3b82f6;
+        }
+      }
+
+      .field-error {
+        display: block;
+        font-size: 0.875rem;
+        color: #dc2626;
+        margin-top: 0.25rem;
+      }
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+      justify-content: flex-end;
+
+      .btn-secondary {
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        background: transparent;
+        color: #64748b;
+        border: 1px solid #cbd5e1;
+
+        &:hover:not(:disabled) {
+          background: #f1f5f9;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+
+      .btn-primary {
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        background: #10b981;
+        color: white;
+        border: none;
+
+        &:hover:not(:disabled) {
+          background: #059669;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .error-msg {
+      color: #dc2626;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+  }
+}

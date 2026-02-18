@@ -28,6 +28,7 @@ export class Sidebar {
         { label: 'Users', route: '/admin/users', icon: '👥' },
         { label: 'Offers', route: '/admin/offers', icon: '💼' },
         { label: 'Projects', route: '/admin/projects', icon: '🚀' },
+        { label: 'Planning', route: '/admin/planning', icon: '📅' },
         { label: 'Evaluations', route: '/admin/evaluations', icon: '📝' },
         { label: 'Reviews', route: '/admin/reviews', icon: '⭐' },
         { label: 'Settings', route: '/admin/settings', icon: '⚙️' },
@@ -43,8 +44,12 @@ export class Sidebar {
       return [
         ...commonItems,
         { label: 'Browse Freelancers', route: '/dashboard/browse-freelancers', icon: '🔍' },
+        { label: 'Browse Offers', route: '/dashboard/browse-offers', icon: '💼' },
+        { label: 'My Offer Applications', route: '/dashboard/my-offer-applications', icon: '📝' },
         { label: 'Post a Job', route: '/dashboard/post-job', icon: '➕' },
         { label: 'My Projects', route: '/dashboard/my-projects', icon: '📁' },
+        { label: 'My Reviews', route: '/dashboard/reviews', icon: '⭐' },
+        { label: 'Reviews about me', route: '/dashboard/reviews/about-me', icon: '💬' },
         { label: 'My Contracts', route: '/dashboard/my-contracts', icon: '📋' },
         { label: 'Track Progress', route: '/dashboard/track-progress', icon: '📊' },
         { label: 'Messages', route: '/dashboard/messages', icon: '💬' },
@@ -57,8 +62,11 @@ export class Sidebar {
     if (this.auth.isFreelancer()) {
       return [
         ...commonItems,
+        { label: 'My Offers', route: '/dashboard/my-offers', icon: '💼' },
         { label: 'Browse Jobs', route: '/dashboard/browse-jobs', icon: '🔍' },
         { label: 'My Applications', route: '/dashboard/my-applications', icon: '📋' },
+        { label: 'My Reviews', route: '/dashboard/reviews', icon: '⭐' },
+        { label: 'Reviews about me', route: '/dashboard/reviews/about-me', icon: '💬' },
         { label: 'My Contracts', route: '/dashboard/my-contracts', icon: '📋' },
         { label: 'My Progress Updates', route: '/dashboard/progress-updates', icon: '📊' },
         { label: 'My Portfolio', route: '/dashboard/my-portfolio', icon: '🎨' },
