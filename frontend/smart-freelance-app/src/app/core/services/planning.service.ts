@@ -124,6 +124,40 @@ export interface ProjectProgressStatsDto {
   lastUpdateAt: string | null;
 }
 
+/** Validation response for a progress update (POST /progress-updates/validate). */
+export interface ProgressUpdateValidationResponse {
+  valid: boolean;
+  minAllowed: number | null;
+  provided: number | null;
+  errors: string[];
+}
+
+/** Time-bounded project report (GET /progress-updates/stats/report). */
+export interface ProgressReportDto {
+  projectId: number;
+  from: string;
+  to: string;
+  updateCount: number;
+  commentCount: number;
+  averageProgressPercentage: number | null;
+  firstUpdateAt: string | null;
+  lastUpdateAt: string | null;
+}
+
+/** Health payload for the Planning microservice (GET /planning/health). */
+export interface PlanningHealthDatabase {
+  status: string;
+  progressUpdateCount?: number;
+  error?: string;
+}
+
+export interface PlanningHealth {
+  service: string;
+  status: string;
+  timestamp: string;
+  database?: PlanningHealthDatabase;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PlanningService {
   constructor(private http: HttpClient) {}
@@ -249,6 +283,39 @@ export class PlanningService {
     );
   }
 
+  /** Latest progress update for a given project (planning microservice only). */
+  getLatestProgressUpdateByProject(projectId: number): Observable<ProgressUpdate | null> {
+    const url = `${PLANNING_API}/progress-updates/latest?projectId=${projectId}`;
+    return this.http.get<ProgressUpdate>(url).pipe(
+      catchError((err) => {
+        if (err?.status === 404) return of(null);
+        return of(null);
+      })
+    );
+  }
+
+  /** Latest progress update for a given freelancer (planning microservice only). */
+  getLatestProgressUpdateByFreelancer(freelancerId: number): Observable<ProgressUpdate | null> {
+    const url = `${PLANNING_API}/progress-updates/latest?freelancerId=${freelancerId}`;
+    return this.http.get<ProgressUpdate>(url).pipe(
+      catchError((err) => {
+        if (err?.status === 404) return of(null);
+        return of(null);
+      })
+    );
+  }
+
+  /** Latest progress update for a given contract (planning microservice only). */
+  getLatestProgressUpdateByContract(contractId: number): Observable<ProgressUpdate | null> {
+    const url = `${PLANNING_API}/progress-updates/latest?contractId=${contractId}`;
+    return this.http.get<ProgressUpdate>(url).pipe(
+      catchError((err) => {
+        if (err?.status === 404) return of(null);
+        return of(null);
+      })
+    );
+  }
+
   createProgressUpdate(request: ProgressUpdateRequest): Observable<ProgressUpdate> {
     return this.http.post<ProgressUpdate>(`${PLANNING_API}/progress-updates`, request).pipe(
       catchError((err) => throwError(() => err))
@@ -268,11 +335,58 @@ export class PlanningService {
     );
   }
 
+  /** Get minimum allowed progress percentage for the next update of a project. */
+  getNextAllowedProgressPercentage(projectId: number): Observable<number> {
+    return this.http
+      .get<{ projectId: number; minAllowed: number }>(
+        `${PLANNING_API}/progress-updates/next-allowed-percentage`,
+        { params: { projectId: String(projectId) } }
+      )
+      .pipe(
+        map((res) => (typeof res?.minAllowed === 'number' ? res.minAllowed : 0)),
+        catchError(() => of(0))
+      );
+  }
+
+  /** Validate a progress update without persisting (backend applies same rules as create/update). */
+  validateProgressUpdate(request: ProgressUpdateRequest): Observable<ProgressUpdateValidationResponse> {
+    return this.http
+      .post<ProgressUpdateValidationResponse>(`${PLANNING_API}/progress-updates/validate`, request)
+      .pipe(
+        catchError(() =>
+          of({
+            valid: false,
+            minAllowed: null,
+            provided: request.progressPercentage ?? null,
+            errors: ['Validation failed. Please try again later.'],
+          })
+        )
+      );
+  }
+
   // ---------- Progress comments (Client CRUD) ----------
 
   getAllComments(): Observable<ProgressComment[]> {
     return this.http.get<ProgressComment[]>(`${PLANNING_API}/progress-comments`).pipe(
       catchError(() => of([]))
+    );
+  }
+
+  /** Paginated comments for admin/moderation (planning microservice only). */
+  getCommentsPaged(page: number, size: number = 20): Observable<PageResponse<ProgressComment>> {
+    const query = new URLSearchParams();
+    query.set('page', String(page));
+    query.set('size', String(size));
+    const url = `${PLANNING_API}/progress-comments?${query.toString()}`;
+    return this.http.get<PageResponse<ProgressComment>>(url).pipe(
+      map((p) => ({
+        content: p?.content ?? [],
+        totalElements: p?.totalElements ?? 0,
+        totalPages: p?.totalPages ?? 0,
+        size: p?.size ?? size,
+        number: p?.number ?? page,
+      })),
+      catchError(() => of({ content: [], totalElements: 0, totalPages: 0, size, number: page }))
     );
   }
 
@@ -284,6 +398,13 @@ export class PlanningService {
 
   getCommentsByProgressUpdateId(progressUpdateId: number): Observable<ProgressComment[]> {
     return this.http.get<ProgressComment[]>(`${PLANNING_API}/progress-comments/progress-update/${progressUpdateId}`).pipe(
+      catchError(() => of([]))
+    );
+  }
+
+  /** All comments authored by a specific user (planning microservice only). */
+  getCommentsByUserId(userId: number): Observable<ProgressComment[]> {
+    return this.http.get<ProgressComment[]>(`${PLANNING_API}/progress-comments/by-user/${userId}`).pipe(
       catchError(() => of([]))
     );
   }
@@ -300,10 +421,63 @@ export class PlanningService {
     );
   }
 
+  /** Partially update comment (currently only message) using PATCH. */
+  patchComment(id: number, payload: { message?: string }): Observable<ProgressComment | null> {
+    return this.http.patch<ProgressComment>(`${PLANNING_API}/progress-comments/${id}`, payload).pipe(
+      catchError(() => of(null))
+    );
+  }
+
   deleteComment(id: number): Observable<boolean> {
     return this.http.delete(`${PLANNING_API}/progress-comments/${id}`, { observe: 'response' }).pipe(
       map((res) => res.status >= 200 && res.status < 300),
       catchError(() => of(false))
+    );
+  }
+
+  // ---------- Aggregated / Reporting / Health ----------
+
+  /** Projects that are due or overdue for an update (alias to stalled projects). */
+  getDueOrOverdueProjects(daysWithoutUpdate: number = 7): Observable<StalledProjectDto[]> {
+    // Use the existing stalled/projects endpoint behind the scenes for maximum compatibility.
+    return this.http
+      .get<StalledProjectDto[]>(`${PLANNING_API}/progress-updates/stalled/projects?daysWithoutUpdate=${daysWithoutUpdate}`)
+      .pipe(catchError(() => of([])));
+  }
+
+  /** Project-level report for a period. If from/to omitted, backend defaults to last 30 days. */
+  getProjectReport(projectId: number, from?: string | null, to?: string | null): Observable<ProgressReportDto | null> {
+    const query = new URLSearchParams();
+    query.set('projectId', String(projectId));
+    if (from?.trim()) query.set('from', from.trim());
+    if (to?.trim()) query.set('to', to.trim());
+    const url = `${PLANNING_API}/progress-updates/stats/report?${query.toString()}`;
+    return this.http.get<ProgressReportDto>(url).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  /** Download a CSV export of progress updates matching the provided filters. */
+  downloadProgressExport(params: Omit<ProgressUpdateFilterParams, 'page' | 'size' | 'sort'> & { format?: string }): Observable<Blob> {
+    const query = new URLSearchParams();
+    if (params.projectId != null) query.set('projectId', String(params.projectId));
+    if (params.freelancerId != null) query.set('freelancerId', String(params.freelancerId));
+    if (params.contractId != null) query.set('contractId', String(params.contractId));
+    if (params.progressMin != null) query.set('progressMin', String(params.progressMin));
+    if (params.progressMax != null) query.set('progressMax', String(params.progressMax));
+    if (params.dateFrom != null && params.dateFrom.trim()) query.set('dateFrom', params.dateFrom.trim());
+    if (params.dateTo != null && params.dateTo.trim()) query.set('dateTo', params.dateTo.trim());
+    if (params.search != null && params.search.trim()) query.set('search', params.search.trim());
+    query.set('format', (params.format ?? 'csv').trim().toLowerCase());
+    const url = `${PLANNING_API}/progress-updates/export?${query.toString()}`;
+    return this.http.get(url, { responseType: 'blob' });
+  }
+
+  /** Lightweight health check for the Planning microservice (via API Gateway). */
+  getPlanningHealth(): Observable<PlanningHealth | null> {
+    // Use the dedicated Planning health endpoint exposed by the microservice itself.
+    return this.http.get<PlanningHealth>(`${PLANNING_API}/planning/health`).pipe(
+      catchError(() => of(null))
     );
   }
 }

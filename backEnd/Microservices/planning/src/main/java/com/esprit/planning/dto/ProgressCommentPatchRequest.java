@@ -1,0 +1,17 @@
+package com.esprit.planning.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Schema(description = "Request body for partially updating a comment (PATCH)")
+public class ProgressCommentPatchRequest {
+
+    @Schema(description = "New comment text. If null, the message will not be changed.", example = "Updated comment after review.")
+    private String message;
+}
+

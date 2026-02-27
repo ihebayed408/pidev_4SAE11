@@ -1,6 +1,8 @@
 package com.esprit.planning.service;
 
 import com.esprit.planning.dto.*;
+import com.esprit.planning.dto.ProgressUpdateRequest;
+import com.esprit.planning.dto.ProgressUpdateValidationResponse;
 import com.esprit.planning.entity.ProgressUpdate;
 import com.esprit.planning.exception.ProgressCannotDecreaseException;
 import com.esprit.planning.repository.ProgressCommentRepository;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -69,6 +72,21 @@ public class ProgressUpdateService {
         return progressUpdateRepository.findByFreelancerId(freelancerId);
     }
 
+    @Transactional(readOnly = true)
+    public Optional<ProgressUpdate> findLatestByProjectId(Long projectId) {
+        return progressUpdateRepository.findFirstByProjectIdOrderByCreatedAtDesc(projectId);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<ProgressUpdate> findLatestByFreelancerId(Long freelancerId) {
+        return progressUpdateRepository.findFirstByFreelancerIdOrderByCreatedAtDesc(freelancerId);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<ProgressUpdate> findLatestByContractId(Long contractId) {
+        return progressUpdateRepository.findFirstByContractIdOrderByCreatedAtDesc(contractId);
+    }
+
     /**
      * Returns the maximum progress percentage for the given project, from updates
      * that are not the one with excludeUpdateId (pass null to include all).
@@ -117,6 +135,45 @@ public class ProgressUpdateService {
     }
 
     @Transactional(readOnly = true)
+    public Integer getNextAllowedPercentageForProject(Long projectId) {
+        return getMaxProgressPercentageForProject(projectId, null);
+    }
+
+    @Transactional(readOnly = true)
+    public ProgressUpdateValidationResponse validate(ProgressUpdateRequest request) {
+        List<String> errors = new ArrayList<>();
+
+        if (request.getProjectId() == null) {
+            errors.add("projectId is required");
+        }
+        if (request.getFreelancerId() == null) {
+            errors.add("freelancerId is required");
+        }
+        Integer provided = request.getProgressPercentage();
+        if (provided == null) {
+            errors.add("progressPercentage is required");
+        } else if (provided < 0 || provided > 100) {
+            errors.add("progressPercentage must be between 0 and 100");
+        }
+
+        Integer minAllowed = null;
+        if (request.getProjectId() != null) {
+            minAllowed = getNextAllowedPercentageForProject(request.getProjectId());
+            if (provided != null && provided < minAllowed) {
+                errors.add("progressPercentage cannot be less than previously recorded progress for this project");
+            }
+        }
+
+        boolean valid = errors.isEmpty();
+        return ProgressUpdateValidationResponse.builder()
+                .valid(valid)
+                .minAllowed(minAllowed)
+                .provided(provided)
+                .errors(errors)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
     public List<ProgressTrendPointDto> getProgressTrendByProject(Long projectId, LocalDate from, LocalDate to) {
         LocalDateTime fromDateTime = from.atStartOfDay();
         LocalDateTime toDateTime = to.plusDays(1).atStartOfDay(); // exclusive end
@@ -134,6 +191,45 @@ public class ProgressUpdateService {
                         .build())
                 .sorted(Comparator.comparing(ProgressTrendPointDto::getDate))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public ProgressReportDto getProgressReportForProject(Long projectId, LocalDate from, LocalDate to) {
+        LocalDate fromEffective = from != null ? from : LocalDate.now().minusDays(30);
+        LocalDate toEffective = to != null ? to : LocalDate.now();
+
+        LocalDateTime fromDateTime = fromEffective.atStartOfDay();
+        LocalDateTime toDateTime = toEffective.plusDays(1).atStartOfDay(); // exclusive end
+
+        List<ProgressUpdate> updates = progressUpdateRepository.findByProjectIdAndCreatedAtBetween(projectId, fromDateTime, toDateTime);
+        List<Long> updateIds = updates.stream().map(ProgressUpdate::getId).collect(Collectors.toList());
+
+        long commentCount = updateIds.isEmpty() ? 0 : progressCommentRepository.countByProgressUpdate_IdIn(updateIds);
+
+        Double avgPct = updates.isEmpty() ? null : updates.stream()
+                .mapToInt(ProgressUpdate::getProgressPercentage)
+                .average()
+                .orElse(0.0);
+
+        LocalDateTime firstUpdateAt = updates.stream()
+                .map(ProgressUpdate::getCreatedAt)
+                .min(LocalDateTime::compareTo)
+                .orElse(null);
+        LocalDateTime lastUpdateAt = updates.stream()
+                .map(ProgressUpdate::getUpdatedAt)
+                .max(LocalDateTime::compareTo)
+                .orElse(null);
+
+        return ProgressReportDto.builder()
+                .projectId(projectId)
+                .from(fromEffective)
+                .to(toEffective)
+                .updateCount(updates.size())
+                .commentCount(commentCount)
+                .averageProgressPercentage(updates.isEmpty() ? null : avgPct)
+                .firstUpdateAt(firstUpdateAt)
+                .lastUpdateAt(lastUpdateAt)
+                .build();
     }
 
     // --- Statistics ---
@@ -250,6 +346,21 @@ public class ProgressUpdateService {
                 .distinctProjectCount(distinctProjectCount)
                 .distinctFreelancerCount(distinctFreelancerCount)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProgressUpdate> findAllFilteredForExport(
+            Optional<Long> projectId,
+            Optional<Long> freelancerId,
+            Optional<Long> contractId,
+            Optional<Integer> progressMin,
+            Optional<Integer> progressMax,
+            Optional<LocalDate> dateFrom,
+            Optional<LocalDate> dateTo,
+            Optional<String> search) {
+        var spec = ProgressUpdateSpecification.filtered(
+                projectId, freelancerId, contractId, progressMin, progressMax, dateFrom, dateTo, search);
+        return progressUpdateRepository.findAll(spec, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
     }
 
     // --- Stalled projects (section 4) ---

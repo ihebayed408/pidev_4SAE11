@@ -20,6 +20,22 @@
         <span class="section-title__icon">📊</span>
         Statistics
       </h2>
+      <div class="health-strip">
+        @if (healthLoading) {
+          <span class="health health--loading">Checking Planning health…</span>
+        } @else if (planningHealth) {
+          <span
+            class="health"
+            [class.health--up]="planningHealth.status === 'UP'"
+            [class.health--degraded]="planningHealth.status !== 'UP'">
+            <span class="health-dot"></span>
+            <span class="health-label">Planning service</span>
+            <span class="health-status">{{ planningHealth.status }}</span>
+          </span>
+        } @else {
+          <span class="health health--unknown">Health unavailable</span>
+        }
+      </div>
     @if (statsLoading && !dashboardStats) {
       <div class="state-box state-box--loading">
         <span class="state-box__spinner" aria-hidden="true"></span>
@@ -100,6 +116,68 @@
           }
         </div>
       </div>
+      <div class="stats-report" [formGroup]="reportForm">
+        <h3>Project report</h3>
+        <p class="stats-report__hint">Generate a summary report for a single project (updates, comments, and progress over time).</p>
+        <div class="report-controls">
+          <div class="field-inline">
+            <label for="report-project">Project</label>
+            <select id="report-project" formControlName="projectId">
+              <option [ngValue]="null">Select a project…</option>
+              @for (p of projectsForAdd; track p.id) {
+                <option [ngValue]="p.id">{{ getProjectLabel(p) }}</option>
+              }
+            </select>
+          </div>
+          <div class="field-inline">
+            <label for="report-from">From</label>
+            <input id="report-from" type="date" formControlName="from" />
+          </div>
+          <div class="field-inline">
+            <label for="report-to">To</label>
+            <input id="report-to" type="date" formControlName="to" />
+          </div>
+          <button
+            type="button"
+            class="btn-secondary"
+            (click)="loadProjectReport()"
+            [disabled]="reportLoading || !reportForm.get('projectId')?.value">
+            {{ reportLoading ? 'Generating…' : 'Generate report' }}
+          </button>
+        </div>
+        @if (reportLoading) {
+          <p class="state-box__text">Generating report…</p>
+        } @else if (report) {
+          <div class="report-summary">
+            <div class="report-summary-item">
+              <span class="report-summary-label">Updates</span>
+              <span class="report-summary-value">{{ report.updateCount }}</span>
+            </div>
+            <div class="report-summary-item">
+              <span class="report-summary-label">Comments</span>
+              <span class="report-summary-value">{{ report.commentCount }}</span>
+            </div>
+            <div class="report-summary-item">
+              <span class="report-summary-label">Average progress</span>
+              <span class="report-summary-value">
+                {{ report.averageProgressPercentage != null ? (report.averageProgressPercentage | number:'1.1-1') + '%' : '—' }}
+              </span>
+            </div>
+            <div class="report-summary-item">
+              <span class="report-summary-label">First update</span>
+              <span class="report-summary-meta">
+                {{ report.firstUpdateAt ? (report.firstUpdateAt | date:'medium') : '—' }}
+              </span>
+            </div>
+            <div class="report-summary-item">
+              <span class="report-summary-label">Last update</span>
+              <span class="report-summary-meta">
+                {{ report.lastUpdateAt ? (report.lastUpdateAt | date:'medium') : '—' }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
     } @else {
       <p class="empty-msg">Statistics unavailable (Planning service may be down).</p>
     }
@@ -134,6 +212,9 @@
       <div class="toolbar">
         <span class="toolbar-count">{{ totalElements }} <span class="toolbar-count__label">total</span> · Page {{ page + 1 }} of {{ totalPages || 1 }}</span>
         <div class="toolbar-actions">
+          <button type="button" class="btn-secondary" (click)="exportCsv()" [disabled]="loading || exporting">
+            {{ exporting ? 'Exporting…' : 'Export CSV' }}
+          </button>
           <button type="button" class="btn-add" (click)="openAdd()">
             <span class="btn-add__label">Add progress update</span>
           </button>

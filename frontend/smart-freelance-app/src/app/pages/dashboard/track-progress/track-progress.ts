@@ -10,6 +10,7 @@ import {
   ProgressComment,
   ProgressCommentRequest,
   PageResponse,
+  StalledProjectDto,
 } from '../../../core/services/planning.service';
 import { Card } from '../../../shared/components/card/card';
 import { forkJoin, Subject, Subscription } from 'rxjs';
@@ -63,6 +64,10 @@ export class TrackProgress implements OnInit, OnDestroy {
   /** Client stats aggregated across their projects. */
   stats: ClientProgressStats | null = null;
   statsLoading = false;
+
+  /** Projects that are due or overdue for a progress update (no update in N days). */
+  dueOrOverdueProjects: StalledProjectDto[] = [];
+  dueLoading = false;
 
   page = 0;
   size = PAGE_SIZE;
@@ -136,6 +141,7 @@ export class TrackProgress implements OnInit, OnDestroy {
         this.projects = list ?? [];
         this.loading = false;
         this.loadClientStats();
+        this.loadDueOrOverdue();
         this.cdr.detectChanges();
       },
       error: () => {
@@ -181,6 +187,26 @@ export class TrackProgress implements OnInit, OnDestroy {
       },
       error: () => {
         this.statsLoading = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  loadDueOrOverdue(): void {
+    if (this.projects.length === 0) {
+      this.dueOrOverdueProjects = [];
+      return;
+    }
+    this.dueLoading = true;
+    this.planning.getDueOrOverdueProjects(7).subscribe({
+      next: (list) => {
+        const ids = new Set(this.projects.map((p) => p.id).filter((id): id is number => id != null));
+        this.dueOrOverdueProjects = (list ?? []).filter((s) => ids.has(s.projectId));
+        this.dueLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.dueLoading = false;
         this.cdr.detectChanges();
       },
     });

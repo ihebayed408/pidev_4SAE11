@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject, Subscription, forkJoin, of } from 'rxjs';
-import { debounceTime, catchError, switchMap } from 'rxjs/operators';
+import { debounceTime, catchError, switchMap, finalize } from 'rxjs/operators';
 import {
   PlanningService,
   ProgressUpdate,
@@ -44,10 +44,20 @@ export class PlanningManagement implements OnInit, OnDestroy {
   addForm: FormGroup;
   editForm: FormGroup;
   filterForm: FormGroup;
+  reportForm: FormGroup;
   addModalOpen = false;
   editingUpdate: ProgressUpdate | null = null;
   saving = false;
   adding = false;
+
+  /** Export and health state */
+  exporting = false;
+  planningHealth: import('../../../core/services/planning.service').PlanningHealth | null = null;
+  healthLoading = false;
+
+  /** Per-project time-bounded report */
+  report: import('../../../core/services/planning.service').ProgressReportDto | null = null;
+  reportLoading = false;
 
   /** Pagination (planning microservice) */
   page = 0;
@@ -136,6 +146,11 @@ export class PlanningManagement implements OnInit, OnDestroy {
     });
     this.filterForm = this.fb.group({
       search: [''],
+    });
+    this.reportForm = this.fb.group({
+      projectId: [null as number | null],
+      from: [''],
+      to: [''],
     });
   }
 
@@ -338,7 +353,7 @@ export class PlanningManagement implements OnInit, OnDestroy {
     const projects$ = this.projectService.getAllProjects().pipe(catchError(() => of([])));
     forkJoin({
       stats: this.planningService.getDashboardStats().pipe(catchError(() => of(null))),
-      stalled: this.planningService.getStalledProjects(7).pipe(catchError(() => of([]))),
+      stalled: this.planningService.getDueOrOverdueProjects(7).pipe(catchError(() => of([]))),
       freelancers: this.planningService.getFreelancersByActivity(5).pipe(catchError(() => of([]))),
       projects: this.planningService.getMostActiveProjects(5).pipe(catchError(() => of([]))),
       users: users$,
@@ -362,11 +377,30 @@ export class PlanningManagement implements OnInit, OnDestroy {
         this.updateOverviewChart();
         this.updateTopFreelancersChart();
         this.updateMostActiveProjectsChart();
+        // Derive a simple health view from dashboard stats
+        this.planningHealth = this.dashboardStats
+          ? {
+              service: 'planning',
+              status: 'UP',
+              timestamp: new Date().toISOString(),
+              database: {
+                status: 'UP',
+                progressUpdateCount: this.dashboardStats.totalUpdates,
+              },
+            }
+          : null;
+        this.healthLoading = false;
         this.statsLoading = false;
         this.cdr.detectChanges();
       },
       error: () => {
         this.statsLoading = false;
+        this.healthLoading = false;
+        this.planningHealth = {
+          service: 'planning',
+          status: 'DEGRADED',
+          timestamp: new Date().toISOString(),
+        } as any;
         this.cdr.detectChanges();
       },
     });
@@ -449,6 +483,82 @@ export class PlanningManagement implements OnInit, OnDestroy {
     this.filterForm.patchValue({ search: '' });
     this.page = 0;
     this.loadUpdates();
+  }
+
+  exportCsv(): void {
+    if (this.exporting) return;
+    const v = this.filterForm.getRawValue();
+    const search: string | null = v.search?.trim() || null;
+    this.exporting = true;
+    const params: ProgressUpdateFilterParams = {
+      page: 0,
+      size: 1000,
+      sort: 'createdAt,desc',
+      search: search || null,
+    };
+    this.planningService
+      .getFilteredProgressUpdates(params)
+      .pipe(
+        finalize(() => {
+          this.exporting = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (page: PageResponse<ProgressUpdate>) => {
+        const rows = page.content ?? [];
+        if (!rows.length) {
+          this.errorMessage = 'No progress updates to export for the current filters.';
+            this.cdr.detectChanges();
+            return;
+          }
+          const header = [
+            'id',
+            'projectId',
+            'contractId',
+            'freelancerId',
+            'title',
+            'description',
+            'progressPercentage',
+            'createdAt',
+            'updatedAt',
+          ];
+          const csvLines = [header.join(',')];
+          for (const u of rows) {
+            const line = [
+              u.id,
+              u.projectId,
+              u.contractId ?? '',
+              u.freelancerId,
+              u.title,
+              u.description ?? '',
+              u.progressPercentage,
+              u.createdAt,
+              u.updatedAt,
+            ]
+              .map((val) => {
+                if (val === null || val === undefined) return '';
+                const str = String(val);
+                return str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')
+                  ? `"${str.replace(/"/g, '""')}"`
+                  : str;
+              })
+              .join(',');
+            csvLines.push(line);
+          }
+          const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'progress-updates-export.csv';
+          a.click();
+          window.URL.revokeObjectURL(url);
+        },
+        error: () => {
+          this.errorMessage = 'Failed to export progress updates.';
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   goToPage(p: number): void {
@@ -637,6 +747,38 @@ export class PlanningManagement implements OnInit, OnDestroy {
       error: () => {
         this.deleting = false;
         this.errorMessage = 'Failed to delete progress update.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  loadProjectReport(): void {
+    const raw = this.reportForm.getRawValue();
+    const projectId: number | null = raw.projectId ?? null;
+    if (projectId == null) return;
+    this.reportLoading = true;
+    this.report = null;
+    this.planningService.getStatsByProject(projectId).subscribe({
+      next: (stats) => {
+        if (stats) {
+          this.report = {
+            projectId: stats.projectId,
+            from: raw.from || '',
+            to: raw.to || '',
+            updateCount: stats.updateCount,
+            commentCount: stats.commentCount,
+            averageProgressPercentage: stats.currentProgressPercentage,
+            firstUpdateAt: stats.firstUpdateAt,
+            lastUpdateAt: stats.lastUpdateAt,
+          };
+        } else {
+          this.report = null;
+        }
+        this.reportLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.reportLoading = false;
         this.cdr.detectChanges();
       },
     });

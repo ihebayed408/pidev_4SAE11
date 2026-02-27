@@ -101,6 +101,30 @@
     }
   }
 
+  // ── Due / overdue strip ───────────────────────────────────────
+  .due-strip {
+    margin-top: $spacing-md;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-lg;
+    border: 1px dashed $neutral-200;
+    background: $neutral-50;
+  }
+  .due-text {
+    margin: 0;
+    font-size: $font-size-sm;
+    color: $neutral-600;
+    strong {
+      font-weight: $font-weight-semibold;
+      color: $primary-600;
+    }
+  }
+  .due-text--ok {
+    color: $success-700;
+    strong {
+      color: $success-700;
+    }
+  }
+
   // ── Project Header (when project is selected) ──────────────────
   .project-header {
     margin-bottom: $spacing-lg;
@@ -151,7 +175,21 @@
   }
   .toolbar--projects {
     margin-bottom: $spacing-sm;
-    .count { font-weight: $font-weight-semibold; color: $neutral-500; font-size: $font-size-sm; }
+    .count {
+      font-weight: $font-weight-semibold;
+      color: $neutral-500;
+      font-size: $font-size-sm;
+    }
+    .count--due {
+      margin-left: $spacing-sm;
+      padding: 2px $spacing-sm;
+      border-radius: $radius-full;
+      border: 1px solid $warning-200;
+      background: $warning-50;
+      color: $warning-700;
+      font-size: $font-size-xs;
+      font-weight: $font-weight-semibold;
+    }
   }
 
   // ── Project Selection Grid ─────────────────────────────────────

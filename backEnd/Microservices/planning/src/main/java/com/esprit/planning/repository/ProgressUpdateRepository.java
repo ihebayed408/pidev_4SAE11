@@ -29,6 +29,21 @@ public interface ProgressUpdateRepository extends JpaRepository<ProgressUpdate, 
 
     Optional<ProgressUpdate> findByProjectIdAndUpdatedAt(Long projectId, LocalDateTime updatedAt);
 
+    /**
+     * Latest progress update for a given project.
+     */
+    Optional<ProgressUpdate> findFirstByProjectIdOrderByCreatedAtDesc(Long projectId);
+
+    /**
+     * Latest progress update for a given freelancer.
+     */
+    Optional<ProgressUpdate> findFirstByFreelancerIdOrderByCreatedAtDesc(Long freelancerId);
+
+    /**
+     * Latest progress update for a given contract.
+     */
+    Optional<ProgressUpdate> findFirstByContractIdOrderByCreatedAtDesc(Long contractId);
+
     /** Top freelancers by update count (order by count desc, limit via Pageable). */
     @Query("SELECT p.freelancerId, COUNT(p) FROM ProgressUpdate p GROUP BY p.freelancerId ORDER BY COUNT(p) DESC")
     List<Object[]> findFreelancerIdAndUpdateCountOrderByCountDesc(Pageable pageable);

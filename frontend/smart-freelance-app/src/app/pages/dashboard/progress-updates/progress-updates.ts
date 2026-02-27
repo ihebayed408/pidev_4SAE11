@@ -11,6 +11,7 @@ import {
   ProgressUpdateRequest,
   FreelancerProgressStatsDto,
   PageResponse,
+  StalledProjectDto,
 } from '../../../core/services/planning.service';
 import { Card } from '../../../shared/components/card/card';
 import { forkJoin, Subject, Subscription } from 'rxjs';
@@ -58,6 +59,10 @@ export class ProgressUpdates implements OnInit, OnDestroy {
   /** Freelancer stats (your progress across all projects) */
   stats: FreelancerProgressStatsDto | null = null;
   statsLoading = false;
+
+  /** Projects that are due or overdue for an update (no update in N days). */
+  dueOrOverdueProjects: StalledProjectDto[] = [];
+  dueLoading = false;
 
   /** Pagination for updates list (when project selected) */
   page = 0;
@@ -188,6 +193,7 @@ export class ProgressUpdates implements OnInit, OnDestroy {
                 project,
                 application: appList.find((a: ProjectApplication & { project?: { id?: number } }) => (a.projectId ?? a.project?.id) === project.id),
               }));
+            this.loadDueOrOverdue();
             this.loading = false;
             this.cdr.detectChanges();
           },
@@ -201,6 +207,26 @@ export class ProgressUpdates implements OnInit, OnDestroy {
       error: () => {
         this.loading = false;
         this.errorMessage = 'Failed to load your projects.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  loadDueOrOverdue(): void {
+    if (this.projects.length === 0) {
+      this.dueOrOverdueProjects = [];
+      return;
+    }
+    const ids = new Set(this.projects.map((p) => p.project.id).filter((id): id is number => id != null));
+    this.dueLoading = true;
+    this.planning.getDueOrOverdueProjects(7).subscribe({
+      next: (list) => {
+        this.dueOrOverdueProjects = (list ?? []).filter((s) => ids.has(s.projectId));
+        this.dueLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.dueLoading = false;
         this.cdr.detectChanges();
       },
     });

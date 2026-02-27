@@ -7,6 +7,9 @@ import com.esprit.planning.entity.ProgressUpdate;
 import com.esprit.planning.repository.ProgressCommentRepository;
 import com.esprit.planning.repository.ProgressUpdateRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +29,12 @@ public class ProgressCommentService {
     }
 
     @Transactional(readOnly = true)
+    public Page<ProgressComment> findAllPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(Math.max(0, page), Math.max(1, size));
+        return progressCommentRepository.findAll(pageable);
+    }
+
+    @Transactional(readOnly = true)
     public ProgressComment findById(Long id) {
         return progressCommentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("ProgressComment not found with id: " + id));
@@ -34,6 +43,11 @@ public class ProgressCommentService {
     @Transactional(readOnly = true)
     public List<ProgressComment> findByProgressUpdateId(Long progressUpdateId) {
         return progressCommentRepository.findByProgressUpdate_Id(progressUpdateId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProgressComment> findByUserId(Long userId) {
+        return progressCommentRepository.findByUserId(userId);
     }
 
     @Transactional

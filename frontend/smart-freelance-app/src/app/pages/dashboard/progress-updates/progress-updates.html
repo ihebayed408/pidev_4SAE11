@@ -31,6 +31,18 @@
               <span class="stat-label">Updates (30 days)</span>
             </div>
           </div>
+          <div class="due-strip">
+            @if (dueLoading) {
+              <p class="stats-loading">Checking which of your projects need an update…</p>
+            } @else if (dueOrOverdueProjects.length > 0) {
+              <p class="due-text">
+                <strong>{{ dueOrOverdueProjects.length }}</strong>
+                project(s) have not received an update in the last 7 days.
+              </p>
+            } @else {
+              <p class="due-text due-text--ok">All your projects have recent progress updates.</p>
+            }
+          </div>
         }
       </app-card>
     </section>
@@ -141,6 +153,11 @@
         <p class="section-label">Select a project to manage progress updates</p>
         <div class="toolbar toolbar--projects">
           <span class="count">{{ filteredProjects.length }} project(s)</span>
+          @if (dueOrOverdueProjects.length > 0) {
+            <span class="count count--due">
+              {{ dueOrOverdueProjects.length }} project(s) need a progress update
+            </span>
+          }
         </div>
         @if (filteredProjects.length === 0) {
           <p class="empty-msg">No projects match your search. Try a different term or clear the search.</p>

@@ -11,6 +11,7 @@ const APPLICATIONS_API = `${environment.apiGatewayUrl}/project/applications`;
 export interface Project {
   id?: number;
   clientId?: number;
+  freelancerId?: number;
   title: string;
   description: string;
   budget?: number;

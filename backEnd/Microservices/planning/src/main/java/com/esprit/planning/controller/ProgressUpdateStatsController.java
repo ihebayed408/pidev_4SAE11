@@ -1,6 +1,10 @@
 package com.esprit.planning.controller;
 
-import com.esprit.planning.dto.*;
+import com.esprit.planning.dto.ContractProgressStatsDto;
+import com.esprit.planning.dto.DashboardStatsDto;
+import com.esprit.planning.dto.FreelancerProgressStatsDto;
+import com.esprit.planning.dto.ProgressReportDto;
+import com.esprit.planning.dto.ProjectProgressStatsDto;
 import com.esprit.planning.service.ProgressUpdateService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -50,5 +54,19 @@ public class ProgressUpdateStatsController {
     @ApiResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = DashboardStatsDto.class)))
     public ResponseEntity<DashboardStatsDto> getDashboardStats() {
         return ResponseEntity.ok(progressUpdateService.getDashboardStatistics());
+    }
+
+    @GetMapping("/report")
+    @Operation(
+            summary = "Time-bounded project report",
+            description = "Returns a time-bounded report (updates, comments, averages) for a single project between from/to dates. If from/to are omitted, defaults to the last 30 days."
+    )
+    @ApiResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = ProgressReportDto.class)))
+    public ResponseEntity<ProgressReportDto> getProjectReport(
+            @Parameter(description = "Project ID", example = "1", required = true) @RequestParam Long projectId,
+            @Parameter(description = "Start date (yyyy-MM-dd), optional") @RequestParam(required = false) java.time.LocalDate from,
+            @Parameter(description = "End date (yyyy-MM-dd), optional") @RequestParam(required = false) java.time.LocalDate to
+    ) {
+        return ResponseEntity.ok(progressUpdateService.getProgressReportForProject(projectId, from, to));
     }
 }
