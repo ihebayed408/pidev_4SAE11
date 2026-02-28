@@ -1,5 +1,6 @@
 package com.esprit.planning.service;
 
+import com.esprit.planning.client.ProjectClient;
 import com.esprit.planning.dto.*;
 import com.esprit.planning.dto.ProgressUpdateRequest;
 import com.esprit.planning.dto.ProgressUpdateValidationResponse;
@@ -29,6 +30,8 @@ public class ProgressUpdateService {
 
     private final ProgressUpdateRepository progressUpdateRepository;
     private final ProgressCommentRepository progressCommentRepository;
+    private final PlanningNotificationService planningNotificationService;
+    private final ProjectClient projectClient;
 
     @Transactional(readOnly = true)
     public List<ProgressUpdate> findAll() {
@@ -107,7 +110,10 @@ public class ProgressUpdateService {
         if (progressUpdate.getProgressPercentage() < minAllowed) {
             throw new ProgressCannotDecreaseException(minAllowed, progressUpdate.getProgressPercentage());
         }
-        return progressUpdateRepository.save(progressUpdate);
+        ProgressUpdate saved = progressUpdateRepository.save(progressUpdate);
+        notifyClientAboutProgress(saved.getProjectId(), saved.getFreelancerId(), "New progress update", saved.getTitle(),
+            PlanningNotificationService.TYPE_PROGRESS_UPDATE, saved.getId(), saved.getProgressPercentage());
+        return saved;
     }
 
     @Transactional
@@ -123,15 +129,46 @@ public class ProgressUpdateService {
         existing.setTitle(updated.getTitle());
         existing.setDescription(updated.getDescription());
         existing.setProgressPercentage(updated.getProgressPercentage());
-        return progressUpdateRepository.save(existing);
+        ProgressUpdate saved = progressUpdateRepository.save(existing);
+        notifyClientAboutProgress(saved.getProjectId(), saved.getFreelancerId(), "Progress update edited", saved.getTitle(),
+            PlanningNotificationService.TYPE_PROGRESS_UPDATE, saved.getId(), saved.getProgressPercentage());
+        return saved;
     }
 
     @Transactional
     public void deleteById(Long id) {
-        if (!progressUpdateRepository.existsById(id)) {
-            throw new RuntimeException("ProgressUpdate not found with id: " + id);
-        }
+        ProgressUpdate existing = findById(id);
+        Long projectId = existing.getProjectId();
+        Long freelancerId = existing.getFreelancerId();
+        String title = existing.getTitle();
         progressUpdateRepository.deleteById(id);
+        notifyClientAboutProgress(projectId, freelancerId, "Progress update removed", title,
+            PlanningNotificationService.TYPE_PROGRESS_UPDATE, id, null);
+    }
+
+    /**
+     * Notify the project owner (client) about progress updates. Uses projectId to get clientId from Project service.
+     * Never notifies the freelancer who created the update.
+     */
+    private void notifyClientAboutProgress(Long projectId, Long freelancerId, String notifTitle, String body,
+                                           String type, Long progressUpdateId, Integer progressPercentage) {
+        if (projectId == null) return;
+        try {
+            var project = projectClient.getProjectById(projectId);
+            if (project == null || project.getClientId() == null) return;
+            Long clientId = project.getClientId();
+            if (freelancerId != null && freelancerId.equals(clientId)) return;
+            java.util.Map<String, String> data = new java.util.HashMap<>();
+            data.put("progressUpdateId", String.valueOf(progressUpdateId));
+            data.put("projectId", String.valueOf(projectId));
+            if (progressPercentage != null) data.put("progressPercentage", String.valueOf(progressPercentage));
+            planningNotificationService.notifyUser(
+                String.valueOf(clientId),
+                notifTitle,
+                body != null ? body : "",
+                type,
+                data);
+        } catch (Exception ignored) { /* project service may be down */ }
     }
 
     @Transactional(readOnly = true)

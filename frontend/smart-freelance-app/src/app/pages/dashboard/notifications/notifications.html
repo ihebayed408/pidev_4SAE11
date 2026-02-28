@@ -1,0 +1,64 @@
+<div class="notifications-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Notifications</h1>
+      <p class="page-sub">
+        {{ notifications().length }} notification{{ notifications().length !== 1 ? 's' : '' }}
+        @if (unreadCount() > 0) {
+          · <span class="unread-badge">{{ unreadCount() }} unread</span>
+        }
+      </p>
+    </div>
+    <button type="button" class="btn-refresh" (click)="load()" [disabled]="loading()">
+      {{ loading() ? 'Loading…' : 'Refresh' }}
+    </button>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="alert-error" role="alert">{{ errorMessage() }}</div>
+  }
+
+  @if (loading() && notifications().length === 0) {
+    <p class="loading-msg">Loading notifications…</p>
+  } @else if (notifications().length === 0) {
+    <app-card>
+      <div class="empty-state">
+        <span class="empty-icon" aria-hidden="true">🔔</span>
+        <h2>No notifications yet</h2>
+        <p>When you get progress updates or comments on your work, they’ll show up here.</p>
+      </div>
+    </app-card>
+  } @else {
+    <div class="notifications-list">
+      @for (n of notifications(); track n.id) {
+        <app-card class="notification-card" [class.read]="n.read">
+          <button type="button" class="notification-card-clickable" (click)="goToNotification(n)">
+            <div class="notification-header">
+              <span class="type-badge">{{ typeLabel(n.type) }}</span>
+              <span class="notification-time">{{ formatDate(n.createdAt) }}</span>
+            </div>
+            <h3 class="notification-title">{{ n.title }}</h3>
+            @if (n.body) {
+              <p class="notification-body">{{ n.body }}</p>
+            }
+          </button>
+          <div class="notification-actions">
+            @if (!n.read) {
+              <button type="button" class="btn-mark-read" (click)="markRead(n); $event.stopPropagation()">
+                Mark as read
+              </button>
+            }
+            <button
+              type="button"
+              class="btn-delete"
+              (click)="deleteNotification(n); $event.stopPropagation()"
+              [disabled]="deletingId() === n.id"
+            >
+              {{ deletingId() === n.id ? 'Deleting…' : 'Delete' }}
+            </button>
+          </div>
+        </app-card>
+      }
+    </div>
+  }
+</div>

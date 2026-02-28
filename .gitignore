@@ -1,4 +1,31 @@
 CLAUDE.md
 
-# Fichiers de config locale (clés API)
+# ─── Environment & secrets (never commit) ───
+.env
+.env.local
+.env.*.local
+*.env
+
+# Local config overrides (API keys, DB passwords, Keycloak secrets, etc.)
+**/application-local.properties
 backEnd/Microservices/Offer/src/main/resources/application-local.properties
+
+# Firebase service account keys (never commit)
+*-firebase-adminsdk-*.json
+**/serviceAccountKey*.json
+**/firebase-credentials*.json
+
+# Keystores / TLS (if used later)
+*.jks
+*.p12
+*.pem
+*.key
+
+# ─── Build & IDE ───
+target/
+node_modules/
+dist/
+.angular/
+*.log
+.DS_Store
+Thumbs.db

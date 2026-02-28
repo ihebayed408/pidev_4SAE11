@@ -1,0 +1,9 @@
+/target/
+*.class
+*.jar
+*.war
+*.log
+.idea/
+*.iml
+*-firebase-adminsdk-*.json
+serviceAccountKey*.json

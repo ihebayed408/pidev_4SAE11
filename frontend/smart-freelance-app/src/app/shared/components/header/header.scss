@@ -330,17 +330,312 @@
   &:focus-visible { @include focus-ring; }
 }
 
-// Notification dot badge
-.notif-btn::after {
-  content: '';
+// Notification dropdown container
+.notif-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.notif-btn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+.notif-badge {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 7px;
-  height: 7px;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: $font-weight-semibold;
+  line-height: 16px;
+  text-align: center;
+  color: #fff;
   background: $primary-600;
-  border: 2px solid #ffffff;
   border-radius: $radius-full;
+  border: 2px solid #ffffff;
+}
+
+.notif-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  width: 360px;
+  max-height: 400px;
+  background: #fff;
+  border-radius: $radius-lg;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid $neutral-200;
+  z-index: $z-fixed + 5;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.notif-dropdown-header {
+  padding: 12px 14px;
+  border-bottom: 1px solid $neutral-100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.notif-dropdown-title {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $neutral-900;
+}
+.notif-dropdown-unread {
+  font-size: 11px;
+  color: $primary-600;
+  font-weight: $font-weight-medium;
+}
+
+.notif-dropdown-loading,
+.notif-dropdown-empty {
+  padding: 20px 14px;
+  margin: 0;
+  font-size: $font-size-sm;
+  color: $neutral-500;
+  text-align: center;
+}
+
+// ── Notification dropdown: card list ──
+.notif-dropdown-list {
+  list-style: none;
+  margin: 0;
+  padding: $spacing-sm;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.notif-dropdown-item {
+  list-style: none;
+  margin: 0;
+  &.read .notif-card {
+    opacity: 0.88;
+    border-color: $neutral-100;
+  }
+  &.unread .notif-card {
+    border-left-color: $primary-600;
+    background: linear-gradient(to right, rgba(226, 61, 89, 0.04) 0%, transparent 8px);
+  }
+}
+
+// Each notification as a card (Figma-style: elevation, radius, clear hierarchy)
+.notif-card {
+  position: relative;
+  border-radius: 10px;
+  border: 1px solid $neutral-200;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  overflow: visible;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  border-left: 3px solid transparent;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: $neutral-300;
+  }
+}
+
+.notif-card-delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $neutral-400;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+
+  &:hover:not(:disabled) {
+    color: $neutral-700;
+    background: $neutral-100;
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  &:focus-visible {
+    outline: 2px solid $primary-500;
+    outline-offset: 1px;
+  }
+}
+
+.notif-card-clickable {
+  display: block;
+  width: 100%;
+  padding: 12px 14px 10px;
+  padding-right: 32px; // leave room for delete X
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 0;
+  min-width: 0;
+
+  &:hover {
+    background: rgba(249, 250, 251, 0.8);
+  }
+  &:focus-visible {
+    outline: 2px solid $primary-500;
+    outline-offset: -2px;
+  }
+}
+
+.notif-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.notif-card-type {
+  font-size: 10px;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+  line-height: 1.3;
+
+  &[data-type='PROGRESS_UPDATE'] {
+    background: $info-100;
+    color: $info-600;
+  }
+  &[data-type='PROGRESS_COMMENT'] {
+    background: $neutral-100;
+    color: $neutral-700;
+  }
+  &:not([data-type]) {
+    background: $neutral-100;
+    color: $neutral-600;
+  }
+}
+
+.notif-card-time {
+  font-size: 11px;
+  color: $neutral-400;
+  flex-shrink: 0;
+}
+
+.notif-card-title {
+  font-size: 13px;
+  font-weight: $font-weight-semibold;
+  color: $neutral-900;
+  margin: 0 0 4px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notif-card-body {
+  font-size: 12px;
+  color: $neutral-600;
+  line-height: 1.4;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notif-card-mark-read {
+  display: block;
+  width: 100%;
+  padding: 6px 14px 10px;
+  font-size: 11px;
+  font-weight: $font-weight-medium;
+  color: $primary-600;
+  background: transparent;
+  border: none;
+  border-top: 1px solid $neutral-100;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: $neutral-50;
+  }
+  &:focus-visible {
+    outline: 2px solid $primary-500;
+    outline-offset: -2px;
+  }
+}
+
+.notif-dropdown-see-all {
+  display: block;
+  padding: 10px 14px;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $primary-600;
+  text-align: center;
+  border-top: 1px solid $neutral-100;
+  text-decoration: none;
+  &:hover { background: $neutral-50; }
+}
+
+// Toast (bottom-right, 5s auto-dismiss)
+.notif-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  max-width: 320px;
+  padding: 12px 16px;
+  background: $neutral-900;
+  color: #fff;
+  border-radius: $radius-md;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  animation: notif-toast-in 0.25s ease-out;
+}
+@keyframes notif-toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.notif-toast-message {
+  font-size: $font-size-sm;
+  line-height: 1.4;
+}
+.notif-toast-dismiss {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: $font-weight-medium;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  &:hover { background: rgba(255, 255, 255, 0.3); }
 }
 
 // ── Primary CTA button ──

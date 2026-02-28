@@ -1,5 +1,6 @@
 import { Component, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService, User } from '../../../core/services/user.service';
@@ -82,7 +83,8 @@ export class TrackProgress implements OnInit, OnDestroy {
     private projectService: ProjectService,
     private planning: PlanningService,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute
   ) {
     this.addCommentForm = this.fb.group({
       message: ['', [Validators.required, Validators.maxLength(MESSAGE_MAX)]],
@@ -142,6 +144,14 @@ export class TrackProgress implements OnInit, OnDestroy {
         this.loading = false;
         this.loadClientStats();
         this.loadDueOrOverdue();
+        const projectIdParam = this.route.snapshot.queryParamMap.get('projectId');
+        if (projectIdParam) {
+          const id = Number(projectIdParam);
+          if (!Number.isNaN(id)) {
+            const project = this.projects.find((p) => p.id === id);
+            if (project) this.selectProject(project);
+          }
+        }
         this.cdr.detectChanges();
       },
       error: () => {

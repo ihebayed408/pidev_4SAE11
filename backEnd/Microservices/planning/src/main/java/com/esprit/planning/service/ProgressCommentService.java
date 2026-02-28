@@ -22,6 +22,7 @@ public class ProgressCommentService {
     private final ProgressCommentRepository progressCommentRepository;
     private final ProgressUpdateRepository progressUpdateRepository;
     private final UserClient userClient;
+    private final PlanningNotificationService planningNotificationService;
 
     @Transactional(readOnly = true)
     public List<ProgressComment> findAll() {
@@ -64,21 +65,55 @@ public class ProgressCommentService {
                 .userId(user.getId())
                 .message(message)
                 .build();
-        return progressCommentRepository.save(comment);
+        ProgressComment saved = progressCommentRepository.save(comment);
+        // Notify the freelancer who owns the progress update (if someone else commented)
+        Long freelancerId = progressUpdate.getFreelancerId();
+        if (freelancerId != null && !freelancerId.equals(userId)) {
+            String body = message != null && message.length() > 200 ? message.substring(0, 200) + "..." : message;
+            planningNotificationService.notifyUser(
+                String.valueOf(freelancerId),
+                "New comment on your progress update",
+                body,
+                PlanningNotificationService.TYPE_PROGRESS_COMMENT,
+                java.util.Map.of(
+                    "progressUpdateId", String.valueOf(progressUpdate.getId()),
+                    "commentId", String.valueOf(saved.getId()),
+                    "projectId", String.valueOf(progressUpdate.getProjectId())
+                ));
+        }
+        return saved;
     }
 
     @Transactional
     public ProgressComment update(Long id, String message) {
         ProgressComment existing = findById(id);
         existing.setMessage(message);
-        return progressCommentRepository.save(existing);
+        ProgressComment saved = progressCommentRepository.save(existing);
+        notifyFreelancerAboutComment(saved.getProgressUpdate(), "A comment on your progress update was edited", message);
+        return saved;
     }
 
     @Transactional
     public void deleteById(Long id) {
-        if (!progressCommentRepository.existsById(id)) {
-            throw new RuntimeException("ProgressComment not found with id: " + id);
-        }
+        ProgressComment existing = findById(id);
+        var progressUpdate = existing.getProgressUpdate();
         progressCommentRepository.deleteById(id);
+        notifyFreelancerAboutComment(progressUpdate, "A comment was removed from your progress update", null);
+    }
+
+    private void notifyFreelancerAboutComment(ProgressUpdate progressUpdate, String title, String body) {
+        if (progressUpdate == null) return;
+        Long freelancerId = progressUpdate.getFreelancerId();
+        if (freelancerId == null) return;
+        String bodyText = body != null && body.length() > 200 ? body.substring(0, 200) + "..." : (body != null ? body : "");
+        planningNotificationService.notifyUser(
+            String.valueOf(freelancerId),
+            title,
+            bodyText,
+            PlanningNotificationService.TYPE_PROGRESS_COMMENT,
+            java.util.Map.of(
+                "progressUpdateId", String.valueOf(progressUpdate.getId()),
+                "projectId", String.valueOf(progressUpdate.getProjectId())
+            ));
     }
 }

@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService, User } from '../../../core/services/user.service';
@@ -79,7 +80,8 @@ export class ProgressUpdates implements OnInit, OnDestroy {
     private projectService: ProjectService,
     private planning: PlanningService,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute
   ) {
     this.form = this.fb.group({
       title: ['', [Validators.required, Validators.maxLength(TITLE_MAX)]],
@@ -194,6 +196,14 @@ export class ProgressUpdates implements OnInit, OnDestroy {
                 application: appList.find((a: ProjectApplication & { project?: { id?: number } }) => (a.projectId ?? a.project?.id) === project.id),
               }));
             this.loadDueOrOverdue();
+            const projectIdParam = this.route.snapshot.queryParamMap.get('projectId');
+            if (projectIdParam) {
+              const id = Number(projectIdParam);
+              if (!Number.isNaN(id)) {
+                const item = this.projects.find((p) => p.project.id === id);
+                if (item) this.selectProject(item.project);
+              }
+            }
             this.loading = false;
             this.cdr.detectChanges();
           },

@@ -230,13 +230,65 @@
             </svg>
           </a>
 
-          <!-- Notifications -->
-          <a routerLink="/dashboard/notifications" class="icon-btn notif-btn" aria-label="Notifications">
-            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-              <path d="M10 2a6 6 0 00-6 6c0 5-2 6-2 6h16s-2-1-2-6a6 6 0 00-6-6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-              <path d="M11.73 17a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-            </svg>
-          </a>
+          <!-- Notifications dropdown -->
+          <div class="notif-container">
+            <button type="button"
+                    class="icon-btn notif-btn"
+                    (click)="toggleNotifDropdown()"
+                    [attr.aria-expanded]="notifDropdownOpen()"
+                    aria-label="Notifications">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M10 2a6 6 0 00-6 6c0 5-2 6-2 6h16s-2-1-2-6a6 6 0 00-6-6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                <path d="M11.73 17a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              @if (notificationUnreadCount() > 0) {
+                <span class="notif-badge" aria-label="{{ notificationUnreadCount() }} unread">{{ notificationUnreadCount() > 99 ? '99+' : notificationUnreadCount() }}</span>
+              }
+            </button>
+            @if (notifDropdownOpen()) {
+              <div class="notif-dropdown" role="dialog" aria-label="Notifications">
+                <div class="notif-dropdown-header">
+                  <span class="notif-dropdown-title">Notifications</span>
+                  @if (notificationUnreadCount() > 0) {
+                    <span class="notif-dropdown-unread">{{ notificationUnreadCount() }} unread</span>
+                  }
+                </div>
+                @if (notifDropdownLoading()) {
+                  <p class="notif-dropdown-loading">Loading…</p>
+                } @else if (notificationList().length === 0) {
+                  <p class="notif-dropdown-empty">No notifications yet.</p>
+                }                 @else {
+                  <ul class="notif-dropdown-list">
+                    @for (n of notificationList(); track n.id) {
+                      <li class="notif-dropdown-item" [class.read]="n.read" [class.unread]="!n.read">
+                        <article class="notif-card">
+                          <button type="button" class="notif-card-delete" (click)="deleteNotif(n); $event.stopPropagation()" [disabled]="deletingNotifId() === n.id" [attr.aria-label]="'Delete notification'">
+                            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="14" height="14">
+                              <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                          <button type="button" class="notif-card-clickable" (click)="goToNotification(n)">
+                            <div class="notif-card-top">
+                              <span class="notif-card-type" [attr.data-type]="n.type">{{ notifTypeLabel(n.type) }}</span>
+                              <span class="notif-card-time">{{ formatNotifTime(n.createdAt) }}</span>
+                            </div>
+                            <h4 class="notif-card-title">{{ n.title }}</h4>
+                            @if (n.body) {
+                              <p class="notif-card-body">{{ n.body }}</p>
+                            }
+                          </button>
+                          @if (!n.read) {
+                            <button type="button" class="notif-card-mark-read" (click)="markNotifRead(n); $event.stopPropagation()">Mark read</button>
+                          }
+                        </article>
+                      </li>
+                    }
+                  </ul>
+                }
+                <a routerLink="/dashboard/notifications" class="notif-dropdown-see-all" (click)="notifDropdownOpen.set(false)">See all notifications</a>
+              </div>
+            }
+          </div>
 
           <!-- Primary CTA -->
           @if (auth.isFreelancer()) {
@@ -405,6 +457,14 @@
         }
       </div>
 
+    </div>
+  }
+
+  <!-- Toast: new notification (bottom-right, auto-dismiss 5s) -->
+  @if (showToast()) {
+    <div class="notif-toast" role="status" aria-live="polite">
+      <span class="notif-toast-message">{{ toastMessage() }}</span>
+      <button type="button" class="notif-toast-dismiss" (click)="dismissToast()" aria-label="Dismiss">Dismiss</button>
     </div>
   }
 

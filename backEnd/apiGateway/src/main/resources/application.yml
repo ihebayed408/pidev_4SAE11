@@ -96,3 +96,11 @@ spring:
             - Path=/contract/**
           filters:
             - StripPrefix=1
+
+        # Notification (Firestore): direct URL (port 8087)
+        - id: notification
+          uri: http://localhost:8087
+          predicates:
+            - Path=/notification/**
+          filters:
+            - StripPrefix=1
