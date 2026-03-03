@@ -24,8 +24,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for ProgressUpdateService. Verifies CRUD, finders, validation, stats, rankings,
@@ -316,6 +315,174 @@ class ProgressUpdateServiceTest {
 
         assertThat(result).hasSize(1);
         verify(progressUpdateRepository).findAll(any(Specification.class), any(Sort.class));
+    }
+
+    @Test
+    void findByContractId_returnsListFromRepository() {
+        when(progressUpdateRepository.findByContractId(5L)).thenReturn(List.of(progressUpdate(1L, 1L, 10L, "T", 50)));
+
+        List<ProgressUpdate> result = progressUpdateService.findByContractId(5L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getProjectId()).isEqualTo(1L);
+    }
+
+    @Test
+    void findByFreelancerId_returnsListFromRepository() {
+        when(progressUpdateRepository.findByFreelancerId(10L)).thenReturn(List.of(progressUpdate(1L, 1L, 10L, "T", 50)));
+
+        List<ProgressUpdate> result = progressUpdateService.findByFreelancerId(10L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getFreelancerId()).isEqualTo(10L);
+    }
+
+    @Test
+    void findLatestByFreelancerId_whenFound_returnsOptional() {
+        ProgressUpdate u = progressUpdate(1L, 1L, 10L, "Latest", 80);
+        when(progressUpdateRepository.findFirstByFreelancerIdOrderByCreatedAtDesc(10L)).thenReturn(Optional.of(u));
+
+        Optional<ProgressUpdate> result = progressUpdateService.findLatestByFreelancerId(10L);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getTitle()).isEqualTo("Latest");
+    }
+
+    @Test
+    void findLatestByContractId_whenFound_returnsOptional() {
+        ProgressUpdate u = progressUpdate(1L, 1L, 10L, "Contract Latest", 90);
+        when(progressUpdateRepository.findFirstByContractIdOrderByCreatedAtDesc(5L)).thenReturn(Optional.of(u));
+
+        Optional<ProgressUpdate> result = progressUpdateService.findLatestByContractId(5L);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getTitle()).isEqualTo("Contract Latest");
+    }
+
+    @Test
+    void update_whenProgressDecreases_throwsProgressCannotDecreaseException() {
+        ProgressUpdate existing = progressUpdate(1L, 1L, 10L, "Existing", 80);
+        ProgressUpdate otherUpdate = progressUpdate(2L, 1L, 10L, "Other", 85);
+        ProgressUpdate updated = progressUpdate(1L, 1L, 10L, "Updated", 30);
+        when(progressUpdateRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(progressUpdateRepository.findByProjectId(1L)).thenReturn(List.of(existing, otherUpdate));
+
+        assertThatThrownBy(() -> progressUpdateService.update(1L, updated))
+                .isInstanceOf(ProgressCannotDecreaseException.class);
+    }
+
+    @Test
+    void update_valid_savesAndReturns() {
+        ProgressUpdate existing = progressUpdate(1L, 1L, 10L, "Old", 40);
+        ProgressUpdate updated = progressUpdate(1L, 1L, 10L, "Updated", 60);
+        when(progressUpdateRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(progressUpdateRepository.findByProjectId(1L)).thenReturn(List.of(existing));
+        when(progressUpdateRepository.save(any(ProgressUpdate.class))).thenReturn(updated);
+
+        ProgressUpdate result = progressUpdateService.update(1L, updated);
+
+        assertThat(result).isNotNull();
+        verify(progressUpdateRepository).save(any(ProgressUpdate.class));
+    }
+
+    @Test
+    void getProgressReportForProject_returnsReportDto() {
+        ProgressUpdate u = progressUpdate(1L, 1L, 10L, "T", 50);
+        u.setCreatedAt(LocalDateTime.now().minusDays(5));
+        u.setUpdatedAt(LocalDateTime.now());
+        when(progressUpdateRepository.findByProjectIdAndCreatedAtBetween(eq(1L), any(), any())).thenReturn(List.of(u));
+        when(progressCommentRepository.countByProgressUpdate_IdIn(List.of(1L))).thenReturn(2L);
+
+        var result = progressUpdateService.getProgressReportForProject(1L, LocalDate.now().minusDays(30), LocalDate.now());
+
+        assertThat(result.getProjectId()).isEqualTo(1L);
+        assertThat(result.getUpdateCount()).isEqualTo(1);
+        assertThat(result.getCommentCount()).isEqualTo(2);
+        assertThat(result.getAverageProgressPercentage()).isEqualTo(50.0);
+    }
+
+    @Test
+    void getProgressReportForProject_withNullDates_usesDefaults() {
+        when(progressUpdateRepository.findByProjectIdAndCreatedAtBetween(eq(1L), any(), any())).thenReturn(List.of());
+
+        var result = progressUpdateService.getProgressReportForProject(1L, null, null);
+
+        assertThat(result.getProjectId()).isEqualTo(1L);
+        assertThat(result.getUpdateCount()).isEqualTo(0);
+    }
+
+    @Test
+    void getProgressStatisticsByContract_returnsDto() {
+        ProgressUpdate u = progressUpdate(1L, 1L, 10L, "T", 70);
+        when(progressUpdateRepository.findByContractId(5L)).thenReturn(List.of(u));
+        when(progressCommentRepository.countByProgressUpdate_IdIn(List.of(1L))).thenReturn(0L);
+
+        var result = progressUpdateService.getProgressStatisticsByContract(5L);
+
+        assertThat(result.getContractId()).isEqualTo(5L);
+        assertThat(result.getUpdateCount()).isEqualTo(1);
+        assertThat(result.getCurrentProgressPercentage()).isEqualTo(70);
+    }
+
+    @Test
+    void validate_missingFreelancerId_returnsInvalid() {
+        ProgressUpdateRequest request = new ProgressUpdateRequest();
+        request.setProjectId(1L);
+        request.setProgressPercentage(50);
+
+        ProgressUpdateValidationResponse result = progressUpdateService.validate(request);
+
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.getErrors()).anyMatch(e -> e.contains("freelancerId"));
+    }
+
+    @Test
+    void validate_invalidProgressRange_returnsInvalid() {
+        when(progressUpdateRepository.findByProjectId(1L)).thenReturn(List.of());
+        ProgressUpdateRequest request = new ProgressUpdateRequest();
+        request.setProjectId(1L);
+        request.setFreelancerId(10L);
+        request.setProgressPercentage(150);
+
+        ProgressUpdateValidationResponse result = progressUpdateService.validate(request);
+
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.getErrors()).anyMatch(e -> e.contains("between 0 and 100"));
+    }
+
+    @Test
+    void validate_nullProgress_returnsInvalid() {
+        ProgressUpdateRequest request = new ProgressUpdateRequest();
+        request.setProjectId(1L);
+        request.setFreelancerId(10L);
+
+        ProgressUpdateValidationResponse result = progressUpdateService.validate(request);
+
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.getErrors()).anyMatch(e -> e.contains("progressPercentage"));
+    }
+
+    @Test
+    void getMaxProgressPercentageForProject_excludesUpdateId() {
+        ProgressUpdate u1 = progressUpdate(1L, 1L, 10L, "U1", 60);
+        ProgressUpdate u2 = progressUpdate(2L, 1L, 10L, "U2", 80);
+        when(progressUpdateRepository.findByProjectId(1L)).thenReturn(List.of(u1, u2));
+
+        int result = progressUpdateService.getMaxProgressPercentageForProject(1L, 2L);
+
+        assertThat(result).isEqualTo(60);
+    }
+
+    @Test
+    void ensureProjectDeadlineInCalendarForUser_whenAlreadySynced_returnsEarly() {
+        when(projectDeadlineSyncRepository.findByProjectId(1L)).thenReturn(
+                Optional.of(com.esprit.planning.entity.ProjectDeadlineSync.builder()
+                        .projectId(1L).calendarEventId("evt1").syncedAt(LocalDateTime.now()).build()));
+
+        progressUpdateService.ensureProjectDeadlineInCalendarForUser(1L, 10L);
+
+        verify(projectDeadlineSyncRepository).findByProjectId(1L);
+        verify(projectClient, never()).getProjectById(any());
     }
 
     private static ProgressUpdate progressUpdate(Long id, Long projectId, Long freelancerId, String title, int pct) {

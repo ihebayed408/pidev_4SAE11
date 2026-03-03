@@ -76,6 +76,17 @@ class ProgressUpdateControllerTest {
     }
 
     @Test
+    void getFiltered_withSortParam_passesSortToService() throws Exception {
+        when(progressUpdateService.findAllFiltered(any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(new PageImpl<>(List.of()));
+
+        mockMvc.perform(get("/api/progress-updates")
+                        .param("sort", "createdAt,asc"))
+                .andExpect(status().isOk());
+        verify(progressUpdateService).findAllFiltered(any(), any(), any(), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
     void getFiltered_withFilters_passesParamsToService() throws Exception {
         when(progressUpdateService.findAllFiltered(any(), any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(new PageImpl<>(List.of()));
@@ -105,6 +116,17 @@ class ProgressUpdateControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", "text/csv"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("id,projectId,")));
+    }
+
+    @Test
+    void export_withSpecialChars_escapesCsv() throws Exception {
+        ProgressUpdate u = progressUpdate(1L, 1L, 10L, "Title, with comma", 75);
+        when(progressUpdateService.findAllFilteredForExport(any(), any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(List.of(u));
+
+        mockMvc.perform(get("/api/progress-updates/export"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"Title, with comma\"")));
     }
 
     @Test
@@ -165,6 +187,26 @@ class ProgressUpdateControllerTest {
         mockMvc.perform(get("/api/progress-updates/latest").param("projectId", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Latest"));
+    }
+
+    @Test
+    void getLatest_withFreelancerId_returnsUpdate() throws Exception {
+        ProgressUpdate update = progressUpdate(1L, 1L, 10L, "Freelancer Latest", 75);
+        when(progressUpdateService.findLatestByFreelancerId(10L)).thenReturn(Optional.of(update));
+
+        mockMvc.perform(get("/api/progress-updates/latest").param("freelancerId", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Freelancer Latest"));
+    }
+
+    @Test
+    void getLatest_withContractId_returnsUpdate() throws Exception {
+        ProgressUpdate update = progressUpdate(1L, 1L, 10L, "Contract Latest", 90);
+        when(progressUpdateService.findLatestByContractId(5L)).thenReturn(Optional.of(update));
+
+        mockMvc.perform(get("/api/progress-updates/latest").param("contractId", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Contract Latest"));
     }
 
     @Test

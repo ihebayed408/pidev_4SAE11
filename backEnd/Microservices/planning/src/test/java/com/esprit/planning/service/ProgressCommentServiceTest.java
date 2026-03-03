@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -69,6 +70,26 @@ class ProgressCommentServiceTest {
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getTotalElements()).isEqualTo(1);
+        verify(progressCommentRepository).findAll(any(PageRequest.class));
+    }
+
+    @Test
+    void findAllPaged_withNegativePage_usesZero() {
+        when(progressCommentRepository.findAll(any(PageRequest.class))).thenReturn(new PageImpl<>(List.of()));
+
+        Page<ProgressComment> result = progressCommentService.findAllPaged(-1, 10);
+
+        assertThat(result).isNotNull();
+        verify(progressCommentRepository).findAll(any(PageRequest.class));
+    }
+
+    @Test
+    void findAllPaged_withZeroSize_usesMinSizeOne() {
+        when(progressCommentRepository.findAll(any(PageRequest.class))).thenReturn(new PageImpl<>(List.of()));
+
+        Page<ProgressComment> result = progressCommentService.findAllPaged(0, 0);
+
+        assertThat(result).isNotNull();
         verify(progressCommentRepository).findAll(any(PageRequest.class));
     }
 
@@ -157,12 +178,57 @@ class ProgressCommentServiceTest {
         ProgressComment existing = comment(1L, 1L, 5L, "To delete");
         ProgressUpdate pu = new ProgressUpdate();
         pu.setId(1L);
+        pu.setFreelancerId(10L);
         existing.setProgressUpdate(pu);
         when(progressCommentRepository.findById(1L)).thenReturn(Optional.of(existing));
 
         progressCommentService.deleteById(1L);
 
         verify(progressCommentRepository).deleteById(1L);
+    }
+
+    @Test
+    void update_withLongMessage_truncatesInNotification() {
+        ProgressComment existing = comment(1L, 1L, 5L, "Old");
+        ProgressUpdate pu = new ProgressUpdate();
+        pu.setId(1L);
+        pu.setFreelancerId(10L);
+        existing.setProgressUpdate(pu);
+        when(progressCommentRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(progressCommentRepository.save(any(ProgressComment.class))).thenAnswer(i -> i.getArgument(0));
+
+        String longMsg = "a".repeat(250);
+        ProgressComment result = progressCommentService.update(1L, longMsg);
+
+        assertThat(result.getMessage()).hasSize(250);
+        verify(planningNotificationService).notifyUser(any(), any(), eq("a".repeat(200) + "..."), any(), any());
+    }
+
+    @Test
+    void deleteById_whenProgressUpdateNull_doesNotThrow() {
+        ProgressComment existing = comment(1L, 1L, 5L, "No PU");
+        existing.setProgressUpdate(null);
+        when(progressCommentRepository.findById(1L)).thenReturn(Optional.of(existing));
+
+        progressCommentService.deleteById(1L);
+
+        verify(progressCommentRepository).deleteById(1L);
+    }
+
+    @Test
+    void create_whenFreelancerEqualsCommenter_doesNotNotify() {
+        ProgressUpdate pu = new ProgressUpdate();
+        pu.setId(1L);
+        pu.setFreelancerId(5L);
+        when(progressUpdateRepository.findById(1L)).thenReturn(Optional.of(pu));
+        when(userClient.getUserById(5L)).thenReturn(new UserDto(5L, "John", "Doe", "user@test.com", "FREELANCER"));
+        ProgressComment saved = comment(1L, 1L, 5L, "Self");
+        when(progressCommentRepository.save(any(ProgressComment.class))).thenReturn(saved);
+
+        progressCommentService.create(1L, 5L, "Self comment");
+
+        verify(progressCommentRepository).save(any(ProgressComment.class));
+        verify(planningNotificationService, never()).notifyUser(any(), any(), any(), any(), any());
     }
 
     private static ProgressComment comment(Long id, Long progressUpdateId, Long userId, String message) {

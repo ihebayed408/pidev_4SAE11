@@ -65,4 +65,209 @@ class CalendarEventServiceTest {
 
         assertThat(result).isNotNull();
     }
+
+    @Test
+    void listEventsFromDb_withNullTitle_usesUpdateIdInSummary() {
+        ProgressUpdate pu = new ProgressUpdate();
+        pu.setId(2L);
+        pu.setProjectId(1L);
+        pu.setNextUpdateDue(LocalDateTime.now().plusDays(1));
+        pu.setTitle(null);
+        when(progressUpdateRepository.findByNextUpdateDueBetween(any(), any())).thenReturn(List.of(pu));
+        when(projectClient.getProjects()).thenReturn(List.of());
+
+        List<CalendarEventDto> result = calendarEventService.listEventsFromDb(
+                LocalDateTime.now(), LocalDateTime.now().plusMonths(1));
+
+        assertThat(result.get(0).getSummary()).contains("Update #2");
+    }
+
+    @Test
+    void listEventsFromDb_withNullNextUpdateDue_skipsUpdate() {
+        ProgressUpdate pu = new ProgressUpdate();
+        pu.setId(1L);
+        pu.setNextUpdateDue(null);
+        when(progressUpdateRepository.findByNextUpdateDueBetween(any(), any())).thenReturn(List.of(pu));
+        when(projectClient.getProjects()).thenReturn(List.of());
+
+        List<CalendarEventDto> result = calendarEventService.listEventsFromDb(
+                LocalDateTime.now(), LocalDateTime.now().plusMonths(1));
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void listEventsFromDb_withProjectDeadlines_inRange_returnsEvents() {
+        when(progressUpdateRepository.findByNextUpdateDueBetween(any(), any())).thenReturn(List.of());
+        LocalDateTime now = LocalDateTime.now();
+        ProjectDto p = new ProjectDto();
+        p.setId(1L);
+        p.setTitle("Project Alpha");
+        p.setDeadline(now.plusDays(2));
+        when(projectClient.getProjects()).thenReturn(List.of(p));
+
+        List<CalendarEventDto> result = calendarEventService.listEventsFromDb(now, now.plusMonths(1));
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getSummary()).contains("Project deadline");
+        assertThat(result.get(0).getId()).isEqualTo("proj-1");
+    }
+
+    @Test
+    void listEventsFromDb_withProjectBlankTitle_usesProjectId() {
+        when(progressUpdateRepository.findByNextUpdateDueBetween(any(), any())).thenReturn(List.of());
+        LocalDateTime now = LocalDateTime.now();
+        ProjectDto p = new ProjectDto();
+        p.setId(2L);
+        p.setTitle("   ");
+        p.setDeadline(now.plusDays(1));
+        when(projectClient.getProjects()).thenReturn(List.of(p));
+
+        List<CalendarEventDto> result = calendarEventService.listEventsFromDb(now, now.plusMonths(1));
+
+        assertThat(result.get(0).getSummary()).contains("Project #2");
+    }
+
+    @Test
+    void listEventsFromDb_withProjectNullDeadline_skipsProject() {
+        when(progressUpdateRepository.findByNextUpdateDueBetween(any(), any())).thenReturn(List.of());
+        ProjectDto p = new ProjectDto();
+        p.setId(1L);
+        p.setDeadline(null);
+        when(projectClient.getProjects()).thenReturn(List.of(p));
+
+        LocalDateTime now = LocalDateTime.now();
+        List<CalendarEventDto> result = calendarEventService.listEventsFromDb(now, now.plusMonths(1));
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void listEventsFromDb_withProjectDeadlineOutsideRange_skipsProject() {
+        when(progressUpdateRepository.findByNextUpdateDueBetween(any(), any())).thenReturn(List.of());
+        LocalDateTime now = LocalDateTime.now();
+        ProjectDto p1 = new ProjectDto();
+        p1.setId(1L);
+        p1.setDeadline(now.minusDays(1));
+        ProjectDto p2 = new ProjectDto();
+        p2.setId(2L);
+        p2.setDeadline(now.plusMonths(2));
+        when(projectClient.getProjects()).thenReturn(List.of(p1, p2));
+
+        List<CalendarEventDto> result = calendarEventService.listEventsFromDb(now, now.plusMonths(1));
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void listEventsFromDb_withUserIdAndRole_freelancerVisible_returnsEvent() {
+        LocalDateTime now = LocalDateTime.now();
+        ProgressUpdate pu = new ProgressUpdate();
+        pu.setId(1L);
+        pu.setProjectId(1L);
+        pu.setFreelancerId(5L);
+        pu.setNextUpdateDue(now.plusDays(1));
+        pu.setTitle("Update");
+        when(progressUpdateRepository.findByNextUpdateDueBetween(any(), any())).thenReturn(List.of(pu));
+        when(projectClient.getProjects()).thenReturn(List.of());
+        when(progressUpdateRepository.findDistinctProjectIdsByFreelancerId(5L)).thenReturn(List.of());
+
+        List<CalendarEventDto> result = calendarEventService.listEventsFromDb(now, now.plusMonths(1), 5L, "FREELANCER");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo("pu-1");
+    }
+
+    @Test
+    void listEventsFromDb_withUserIdAndRole_clientVisibleViaProject_returnsEvent() {
+        LocalDateTime now = LocalDateTime.now();
+        ProgressUpdate pu = new ProgressUpdate();
+        pu.setId(1L);
+        pu.setProjectId(10L);
+        pu.setFreelancerId(99L);
+        pu.setNextUpdateDue(now.plusDays(1));
+        pu.setTitle("Update");
+        ProjectDto proj = new ProjectDto();
+        proj.setId(10L);
+        proj.setClientId(5L);
+        when(progressUpdateRepository.findByNextUpdateDueBetween(any(), any())).thenReturn(List.of(pu));
+        when(projectClient.getProjects()).thenReturn(List.of());
+        when(projectClient.getProjectById(10L)).thenReturn(proj);
+        when(progressUpdateRepository.findDistinctProjectIdsByFreelancerId(5L)).thenReturn(List.of());
+
+        List<CalendarEventDto> result = calendarEventService.listEventsFromDb(now, now.plusMonths(1), 5L, "CLIENT");
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void listEventsFromDb_withUserIdAndRole_projectDeadlineVisibleToClient_returnsEvent() {
+        LocalDateTime now = LocalDateTime.now();
+        ProjectDto p = new ProjectDto();
+        p.setId(1L);
+        p.setClientId(5L);
+        p.setTitle("Client Project");
+        p.setDeadline(now.plusDays(3));
+        when(progressUpdateRepository.findByNextUpdateDueBetween(any(), any())).thenReturn(List.of());
+        when(projectClient.getProjects()).thenReturn(List.of(p));
+        when(progressUpdateRepository.findDistinctProjectIdsByFreelancerId(5L)).thenReturn(List.of());
+
+        List<CalendarEventDto> result = calendarEventService.listEventsFromDb(now, now.plusMonths(1), 5L, "CLIENT");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo("proj-1");
+    }
+
+    @Test
+    void listEventsFromDb_withUserIdAndRole_projectDeadlineVisibleToFreelancer_returnsEvent() {
+        LocalDateTime now = LocalDateTime.now();
+        ProjectDto p = new ProjectDto();
+        p.setId(1L);
+        p.setClientId(99L);
+        p.setTitle("Freelancer Project");
+        p.setDeadline(now.plusDays(3));
+        when(progressUpdateRepository.findByNextUpdateDueBetween(any(), any())).thenReturn(List.of());
+        when(projectClient.getProjects()).thenReturn(List.of(p));
+        when(progressUpdateRepository.findDistinctProjectIdsByFreelancerId(5L)).thenReturn(List.of(1L));
+
+        List<CalendarEventDto> result = calendarEventService.listEventsFromDb(now, now.plusMonths(1), 5L, "FREELANCER");
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void listEventsFromDb_whenRepositoryThrows_returnsEventsFromProjects() {
+        when(progressUpdateRepository.findByNextUpdateDueBetween(any(), any())).thenThrow(new RuntimeException("DB error"));
+        LocalDateTime now = LocalDateTime.now();
+        ProjectDto p = new ProjectDto();
+        p.setId(1L);
+        p.setDeadline(now.plusDays(1));
+        when(projectClient.getProjects()).thenReturn(List.of(p));
+
+        List<CalendarEventDto> result = calendarEventService.listEventsFromDb(now, now.plusMonths(1));
+
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void listEventsFromDb_whenProjectClientReturnsNull_handlesGracefully() {
+        when(progressUpdateRepository.findByNextUpdateDueBetween(any(), any())).thenReturn(List.of());
+        when(projectClient.getProjects()).thenReturn(null);
+
+        LocalDateTime now = LocalDateTime.now();
+        List<CalendarEventDto> result = calendarEventService.listEventsFromDb(now, now.plusMonths(1));
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void listEventsFromDb_whenProjectClientThrows_handlesGracefully() {
+        when(progressUpdateRepository.findByNextUpdateDueBetween(any(), any())).thenReturn(List.of());
+        when(projectClient.getProjects()).thenThrow(new RuntimeException("Project service down"));
+
+        LocalDateTime now = LocalDateTime.now();
+        List<CalendarEventDto> result = calendarEventService.listEventsFromDb(now, now.plusMonths(1));
+
+        assertThat(result).isEmpty();
+    }
 }

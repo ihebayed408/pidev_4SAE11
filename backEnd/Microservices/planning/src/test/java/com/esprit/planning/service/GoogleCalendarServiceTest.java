@@ -41,6 +41,35 @@ class GoogleCalendarServiceTest {
     }
 
     @Test
+    void createEvent_whenDescriptionNull_doesNotSetDescription() {
+        GoogleCalendarService service = new GoogleCalendarService(null, false, "primary");
+        var result = service.createEvent("primary", "Title",
+                LocalDateTime.now(), LocalDateTime.now().plusHours(1), null);
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void deleteEvent_whenNotAvailable_returnsFalse() {
+        GoogleCalendarService service = new GoogleCalendarService(null, false, "primary");
+        boolean result = service.deleteEvent("primary", "event-123");
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void deleteEvent_whenEventIdNull_returnsFalse() {
+        GoogleCalendarService service = new GoogleCalendarService(mock(Calendar.class), true, "primary");
+        boolean result = service.deleteEvent("primary", null);
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void deleteEvent_whenEventIdBlank_returnsFalse() {
+        GoogleCalendarService service = new GoogleCalendarService(mock(Calendar.class), true, "primary");
+        boolean result = service.deleteEvent("primary", "   ");
+        assertThat(result).isFalse();
+    }
+
+    @Test
     void listEvents_whenNotAvailable_returnsEmptyList() {
         GoogleCalendarService service = new GoogleCalendarService(null, false, "primary");
         var result = service.listEvents("primary", LocalDateTime.now(), LocalDateTime.now().plusDays(1));
