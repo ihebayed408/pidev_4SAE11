@@ -35,8 +35,10 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir(PLANNING_DIR) {
-                    withSonarQubeEnv('SonarQube') {
-                        sh 'chmod +x mvnw && ./mvnw sonar:sonar -Dsonar.projectKey=planning -Dsonar.projectName=Planning'
+                    withCredentials([string(credentialsId: 'SonarQubeToken', variable: 'SONAR_TOKEN')]) {
+                        withSonarQubeEnv('SonarQube') {
+                            sh 'chmod +x mvnw && ./mvnw sonar:sonar -Dsonar.projectKey=planning -Dsonar.projectName=Planning -Dsonar.token=$SONAR_TOKEN'
+                        }
                     }
                 }
             }
