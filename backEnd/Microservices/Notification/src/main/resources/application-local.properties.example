@@ -1,0 +1,4 @@
+# Copy to application-local.properties (gitignored) and set your Firebase credentials path.
+# NEVER commit the actual JSON file or this file with real paths.
+
+notification.firebase.credentials-path=C:/path/to/notificationsystem-3bd2f-firebase-adminsdk-xxx.json

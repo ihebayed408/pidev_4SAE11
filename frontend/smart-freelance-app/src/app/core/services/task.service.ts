@@ -139,7 +139,7 @@ export class TaskService {
         size: p?.size ?? 20,
         number: p?.number ?? 0,
       })),
-      catchError(() => of({ content: [], totalElements: 0, totalPages: 0, size: 20, number: 0 }))
+      catchError((err) => throwError(() => err))
     );
   }
 

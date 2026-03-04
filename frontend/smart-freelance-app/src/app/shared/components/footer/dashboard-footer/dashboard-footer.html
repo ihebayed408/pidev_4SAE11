@@ -1,0 +1,58 @@
+<footer class="dashboard-footer">
+  <div class="footer-container">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3 class="footer-brand">Freelancia</h3>
+        <p class="footer-tagline">Connect. Collaborate. Create.</p>
+        @if (isClient) {
+          <span class="footer-badge">Client</span>
+        } @else if (isFreelancer) {
+          <span class="footer-badge footer-badge--freelancer">Freelancer</span>
+        }
+      </div>
+
+      @if (isClient) {
+        <div class="footer-section">
+          <h4>Manage</h4>
+          <a routerLink="/dashboard/my-projects" class="footer-link">My Projects</a>
+          <a routerLink="/dashboard/my-contracts" class="footer-link">My Contracts</a>
+          <a routerLink="/dashboard/calendar" class="footer-link">Calendar</a>
+        </div>
+        <div class="footer-section">
+          <h4>Find Talent</h4>
+          <a routerLink="/dashboard/browse-offers" class="footer-link">Browse Offers</a>
+          <a routerLink="/dashboard/browse-jobs" class="footer-link">Discover Projects</a>
+          <a routerLink="/dashboard/my-projects/add" class="footer-link">Post a Job</a>
+        </div>
+      }
+
+      @if (isFreelancer) {
+        <div class="footer-section">
+          <h4>My Work</h4>
+          <a routerLink="/dashboard/my-offers" class="footer-link">My Offers</a>
+          <a routerLink="/dashboard/my-applications" class="footer-link">My Applications</a>
+          <a routerLink="/dashboard/my-contracts" class="footer-link">My Contracts</a>
+          <a routerLink="/dashboard/my-tasks" class="footer-link">My Tasks</a>
+        </div>
+        <div class="footer-section">
+          <h4>Find Work</h4>
+          <a routerLink="/dashboard/browse-jobs" class="footer-link">Browse Jobs</a>
+          <a routerLink="/dashboard/browse-offers" class="footer-link">Browse Offers</a>
+          <a routerLink="/dashboard/my-portfolio" class="footer-link">My Portfolio</a>
+        </div>
+      }
+
+      <div class="footer-section">
+        <h4>Resources</h4>
+        <a routerLink="/how-it-works" class="footer-link">How It Works</a>
+        <a routerLink="/about" class="footer-link">About Us</a>
+        <a routerLink="/dashboard/profile" class="footer-link">Profile</a>
+        <a routerLink="/dashboard/settings" class="footer-link">Settings</a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copyright">© {{ currentYear }} Freelancia. All rights reserved.</p>
+    </div>
+  </div>
+</footer>

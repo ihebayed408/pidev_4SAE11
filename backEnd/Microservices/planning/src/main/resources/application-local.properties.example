@@ -1,0 +1,10 @@
+# Copy to application-local.properties (gitignored). NEVER commit real values.
+# This file is loaded automatically by the Planning microservice when present.
+
+# Google Calendar – path to service account JSON
+# google.calendar.enabled=true
+# google.calendar.credentials-path=C:/path/to/credentials/calendar-service-account.json
+
+# GitHub API – personal access token (or use GITHUB_TOKEN env var)
+# Create token: GitHub → Settings → Developer settings → Personal access tokens
+# github.token=ghp_your_token_here

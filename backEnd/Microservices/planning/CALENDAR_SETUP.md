@@ -7,10 +7,11 @@
 The Planning microservice uses a **service account** JSON key to talk to the Google Calendar API (create/list/delete events). This is **not** the OAuth “client secret” file.
 
 - **Where to get it:** Google Cloud Console → IAM & Admin → Service accounts → Create key (JSON) for a service account that has Calendar API access.
-- **Config (e.g. in Config Server `planning.properties` or local override):**
-  - `google.calendar.enabled=true`
-  - `google.calendar.credentials-path=<absolute-or-relative-path-to-service-account.json>`
-- **Do not commit** the JSON file; it is listed in `.gitignore` (`googleproject-*.json`, `*google*credentials*.json`).
+
+- **Configure one of:**
+  - **Environment variable (recommended):** `GOOGLE_APPLICATION_CREDENTIALS=<path-to-service-account.json>`
+  - **Config:** `google.calendar.enabled=true` and `google.calendar.credentials-path=<path>`
+- **Do not commit** the JSON file; it is listed in `.gitignore`. See `credentials/README.md`.
 
 When `google.calendar.enabled=false` or the credentials file is missing, the calendar still works: events are built from the database (progress “next due” dates and project deadlines from the Project service).
 

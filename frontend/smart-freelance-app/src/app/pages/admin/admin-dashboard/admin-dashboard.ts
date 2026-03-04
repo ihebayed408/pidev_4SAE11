@@ -1,6 +1,7 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 import { Chart, ChartData, ChartOptions, registerables } from 'chart.js';
@@ -25,7 +26,9 @@ Chart.register(...registerables);
   styleUrl: './admin-dashboard.scss',
 })
 export class AdminDashboard implements OnInit {
+  private auth = inject(AuthService);
   loading = true;
+  displayName = '';
   users: User[] = [];
   projects: Project[] = [];
   offersTotal = 0;
@@ -103,6 +106,7 @@ export class AdminDashboard implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.displayName = this.auth.getDisplayName() || 'Admin';
     this.loadAllData();
   }
 

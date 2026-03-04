@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -19,7 +20,9 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -54,9 +57,15 @@ export class LoginComponent {
     }
     const { email, password, staySignedIn } = this.form.getRawValue();
     this.loading = true;
-    this.auth.login(email, password, !!staySignedIn).subscribe({
+    this.auth.login(email, password, !!staySignedIn).pipe(
+      finalize(() => {
+        this.ngZone.run(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        });
+      })
+    ).subscribe({
       next: (res) => {
-        this.loading = false;
         if (res && 'access_token' in res && res.access_token) {
           const role = this.auth.getUserRole();
           if (role === 'ADMIN') {
@@ -64,10 +73,9 @@ export class LoginComponent {
           } else {
             this.router.navigate(['/dashboard']);
           }
-        } else if (res && 'error' in res) {
-          this.errorMessage = res.error;
         } else {
-          this.errorMessage = 'Invalid email or password. Please try again.';
+          this.errorMessage = (res && 'error' in res) ? res.error : 'Invalid email or password. Please try again.';
+          this.cdr.detectChanges();
         }
       },
       error: (err) => {

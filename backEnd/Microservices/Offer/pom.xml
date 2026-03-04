@@ -110,6 +110,12 @@
             <version>2.2.0</version>
         </dependency>
 
+        <!-- Email (JavaMailSender) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
         <!-- DevTools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

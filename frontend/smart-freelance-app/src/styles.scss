@@ -31,6 +31,7 @@
 
   --bg-base: #F8F9FA;         /* Neutral-50 */
   --bg-card: #FFFFFF;
+  --bg-header-footer: #FAF7F4; /* Warm cream – header & footer (distinct from body) */
   --bg-hover: #FFF3EB;
 
   --border-light: #E8DDD5;
@@ -227,4 +228,23 @@ input:focus, textarea:focus, select:focus {
   .container {
     padding: 0 var(--spacing-md);
   }
+}
+
+/* Route transition animations (View Transitions API) – content area only */
+::view-transition-old(page-content) {
+  animation: 200ms ease-out both fade-out;
+}
+
+::view-transition-new(page-content) {
+  animation: 250ms ease-out 50ms both fade-in;
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

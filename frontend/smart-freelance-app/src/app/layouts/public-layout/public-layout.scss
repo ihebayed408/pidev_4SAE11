@@ -4,7 +4,14 @@
   min-height: 100vh;
 }
 
+/* Exclude from route transition – stay static */
+.public-layout app-header,
+.public-layout app-footer {
+  view-transition-name: none;
+}
+
 .public-content {
+  view-transition-name: page-content;
   flex: 1;
   display: flex;
   flex-direction: column;

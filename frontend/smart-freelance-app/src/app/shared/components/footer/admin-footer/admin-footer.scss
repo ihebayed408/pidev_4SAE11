@@ -1,0 +1,90 @@
+@import '../../../../../styles/variables';
+
+.admin-footer {
+  background: $header-footer-bg;
+  border-top: 1px solid $neutral-200;
+  margin-top: auto;
+}
+
+.footer-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: $spacing-2xl $spacing-xl $spacing-lg;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: $spacing-2xl;
+  margin-bottom: $spacing-xl;
+}
+
+.footer-section {
+  h3.footer-brand {
+    font-family: $font-family;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-extrabold;
+    background: $gradient-primary;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: $spacing-sm;
+  }
+
+  .footer-tagline {
+    color: $neutral-600;
+    font-size: $font-size-sm;
+    margin: 0 0 $spacing-sm;
+  }
+
+  .footer-badge {
+    display: inline-block;
+    padding: $spacing-xs $spacing-sm;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    color: $primary-500;
+    background: rgba(227, 126, 51, 0.12);
+    border-radius: $radius-md;
+  }
+
+  h4 {
+    color: $neutral-900;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: $spacing-md;
+  }
+
+  .footer-link {
+    display: block;
+    color: $neutral-600;
+    text-decoration: none;
+    font-size: $font-size-sm;
+    margin-bottom: $spacing-sm;
+    transition: color $transition-base;
+
+    &:hover {
+      color: $primary-500;
+    }
+  }
+}
+
+.footer-bottom {
+  border-top: 1px solid $neutral-200;
+  padding-top: $spacing-lg;
+  text-align: center;
+
+  .footer-copyright {
+    color: $neutral-500;
+    font-size: $font-size-sm;
+    margin: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-xl;
+  }
+}

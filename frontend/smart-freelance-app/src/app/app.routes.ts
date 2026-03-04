@@ -221,6 +221,8 @@ export const routes: Routes = [
       { path: 'calendar', loadComponent: () => import('./pages/dashboard/calendar/calendar').then(m => m.Calendar), title: 'Calendar' },
       { path: 'github', loadComponent: () => import('./pages/dashboard/github/github').then(m => m.Github), title: 'GitHub' },
       { path: 'evaluations', loadComponent: () => import('./pages/admin/admin-dashboard/admin-dashboard').then(m => m.AdminDashboard) },
+      { path: 'skill-stats', loadComponent: () => import('./pages/admin/skill-stats/skill-stats').then(m => m.SkillStats) },
+      { path: 'skills', loadComponent: () => import('./pages/admin/skill-management/skill-management').then(m => m.AdminSkillManagement) },
       { path: 'reviews', loadComponent: () => import('./pages/admin/review-management/review-management').then(m => m.ReviewManagement) },
       { path: 'settings', loadComponent: () => import('./pages/admin/admin-dashboard/admin-dashboard').then(m => m.AdminDashboard) },
     ]

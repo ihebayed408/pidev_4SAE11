@@ -4,14 +4,24 @@
   min-height: 100vh;
 }
 
+/* Exclude from route transition – stay static */
+.admin-layout app-header,
+.admin-layout app-sidebar,
+.admin-layout app-admin-footer {
+  view-transition-name: none;
+}
+
 .admin-body {
   display: flex;
   flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
 .admin-content {
+  view-transition-name: page-content;
   flex: 1;
+  min-width: 0;
   overflow-y: auto;
   padding: var(--spacing-xl);
   background: var(--bg-base);

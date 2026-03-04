@@ -72,6 +72,13 @@
     .error-text {
       color: var(--error);
     }
+
+    .error-retry {
+      margin-top: var(--spacing-xs);
+      font-size: var(--text-xs);
+      opacity: 0.9;
+      color: var(--error);
+    }
   }
 
   .field {

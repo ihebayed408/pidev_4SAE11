@@ -31,13 +31,16 @@ public class GoogleCalendarConfig {
     @ConditionalOnProperty(prefix = "google.calendar", name = "enabled", havingValue = "true")
     public Calendar googleCalendar(
             @Value("${google.calendar.credentials-path:}") String credentialsPath) throws IOException, GeneralSecurityException {
-        if (credentialsPath == null || credentialsPath.isBlank()) {
-            log.warn("Google Calendar is enabled but credentials-path is empty; calendar operations will no-op.");
+        String pathToUse = (credentialsPath != null && !credentialsPath.isBlank())
+                ? credentialsPath.trim()
+                : System.getenv("GOOGLE_APPLICATION_CREDENTIALS");
+        if (pathToUse == null || pathToUse.isBlank()) {
+            log.warn("Google Calendar is enabled but credentials not set. Set GOOGLE_APPLICATION_CREDENTIALS or google.calendar.credentials-path.");
             return null;
         }
-        Path path = Path.of(credentialsPath);
+        Path path = Path.of(pathToUse);
         if (!Files.isRegularFile(path)) {
-            log.warn("Google Calendar credentials file not found at: {}; calendar operations will no-op.", credentialsPath);
+            log.warn("Google Calendar credentials file not found at: {}; calendar operations will no-op.", pathToUse);
             return null;
         }
         try (FileInputStream in = new FileInputStream(path.toFile())) {

@@ -141,10 +141,11 @@ export class TaskManagement implements OnInit {
         this.totalElements = p.totalElements ?? 0;
         this.totalPages = p.totalPages ?? 0;
         this.loading = false;
+        this.errorMessage = '';
         this.cdr.detectChanges();
       },
       error: () => {
-        this.errorMessage = 'Failed to load tasks.';
+        this.errorMessage = 'Failed to load tasks. Ensure the Task microservice is running (port 8091) and the API Gateway (8078) is up.';
         this.loading = false;
         this.cdr.detectChanges();
       },

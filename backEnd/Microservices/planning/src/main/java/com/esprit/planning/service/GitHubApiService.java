@@ -12,12 +12,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
 /**
  * Integrates with GitHub REST API: list branches, get latest commit, create issue.
- * Token is read from github.token in properties (or GITHUB_TOKEN env). See EXTERNAL_API_INTEGRATION.md.
+ * Token is read from github.token, GITHUB_TOKEN env, or github.token-file (e.g. githubToken.txt).
  */
 @Service
 @Slf4j
@@ -32,10 +35,31 @@ public class GitHubApiService {
     public GitHubApiService(
             RestTemplate restTemplate,
             @Value("${github.token:}") String token,
+            @Value("${github.token-file:}") String tokenFile,
             @Value("${github.enabled:false}") boolean enabled) {
         this.restTemplate = restTemplate;
-        this.token = token != null ? token.trim() : "";
+        String resolved = token != null ? token.trim() : "";
+        if (resolved.isEmpty() && tokenFile != null && !tokenFile.isBlank()) {
+            resolved = loadTokenFromFile(tokenFile.trim());
+        }
+        this.token = resolved;
         this.enabled = enabled;
+    }
+
+    private String loadTokenFromFile(String pathStr) {
+        try {
+            Path path = Paths.get(pathStr).toAbsolutePath().normalize();
+            if (Files.isRegularFile(path)) {
+                String t = Files.readString(path).trim();
+                if (!t.isEmpty()) {
+                    log.info("GitHub token loaded from file: {}", path);
+                    return t;
+                }
+            }
+        } catch (Exception e) {
+            log.debug("Could not load GitHub token from {}: {}", pathStr, e.getMessage());
+        }
+        return "";
     }
 
     /** Returns true if GitHub integration is enabled and a token is configured. */

@@ -6,13 +6,14 @@ import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
 import { NotificationService, NotificationItem } from '../../../core/services/notification.service';
 import { Button } from '../button/button';
+import { LiveSearch } from '../live-search/live-search.component';
 
 const POLL_INTERVAL_MS = 15_000;
 const TOAST_AUTO_DISMISS_MS = 5_000;
 
 @Component({
   selector: 'app-header',
-  imports: [CommonModule, RouterLink, RouterLinkActive, Button],
+  imports: [CommonModule, RouterLink, RouterLinkActive, Button, LiveSearch],
   templateUrl: './header.html',
   styleUrl: './header.scss',
   standalone: true,

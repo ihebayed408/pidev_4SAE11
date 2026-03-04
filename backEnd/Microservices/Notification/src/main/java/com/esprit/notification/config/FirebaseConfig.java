@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,18 +46,27 @@ public class FirebaseConfig {
 
     private InputStream credentialsStream() throws IOException {
         if (StringUtils.hasText(credentialsPath)) {
-            java.io.File f = new java.io.File(credentialsPath.trim());
+            File f = new File(credentialsPath.trim());
             if (f.isFile()) return new FileInputStream(f);
         }
         String envPath = System.getenv("GOOGLE_APPLICATION_CREDENTIALS");
         if (StringUtils.hasText(envPath)) {
-            java.io.File f = new java.io.File(envPath.trim());
+            File f = new File(envPath.trim());
             if (f.isFile()) return new FileInputStream(f);
         }
-        // Fallback: project root (when run from project root, user.dir is root)
-        String fallback = System.getProperty("user.dir") + "/notificationsystem-3bd2f-firebase-adminsdk-fbsvc-a00d605692.json";
-        java.io.File fallbackFile = new java.io.File(fallback);
-        if (fallbackFile.isFile()) return new FileInputStream(fallbackFile);
+        // Fallback: firebase-credentials folder at project root (gitignored; for local dev only)
+        try {
+            File fromModule = new File(System.getProperty("user.dir"), "../../../firebase-credentials").getCanonicalFile();
+            if (fromModule.isDirectory()) {
+                File[] files = fromModule.listFiles((d, n) -> n != null && n.endsWith(".json") && n.contains("firebase-adminsdk"));
+                if (files != null && files.length > 0) return new FileInputStream(files[0]);
+            }
+        } catch (IOException ignored) { }
+        File fromRoot = new File(System.getProperty("user.dir"), "firebase-credentials");
+        if (fromRoot.isDirectory()) {
+            File[] files = fromRoot.listFiles((d, n) -> n != null && n.endsWith(".json") && n.contains("firebase-adminsdk"));
+            if (files != null && files.length > 0) return new FileInputStream(files[0]);
+        }
         return null;
     }
 }

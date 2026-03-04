@@ -160,7 +160,7 @@ Swagger UI is available via the Gateway for services that expose it:
 |-------------|---------|---------------|
 | **Google Translate** | Offer translations | API key in Offer service |
 | **Firebase** | Push notifications | Credentials in Notification service |
-| **GitHub** | Planning sync | Token in Planning service |
+| **GitHub** | Planning sync | See [credentials/README.md](credentials/README.md) — set `$env:GITHUB_TOKEN` (token never committed) |
 | **AI API** | Skill verification | API key in Portfolio service |
 
 ---

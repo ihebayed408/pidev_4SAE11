@@ -45,6 +45,9 @@ export interface Offer {
   pendingApplicationsCount?: number;
   canReceiveApplications?: boolean;
   isValid?: boolean;
+  basicPrice?: number;
+  standardPrice?: number;
+  premiumPrice?: number;
 }
 
 export interface OfferRequest {

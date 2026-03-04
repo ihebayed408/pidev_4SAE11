@@ -1,35 +1,77 @@
+@use '../../../../styles/variables' as v;
+
 .admin-dashboard-page {
   max-width: 1400px;
+  min-height: 100vh;
+  background: linear-gradient(180deg, v.$neutral-50 0%, v.$white 6%, v.$neutral-50 100%);
 }
 
 .page-header {
-  margin-bottom: var(--spacing-2xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: v.$spacing-xl;
+  padding: v.$spacing-2xl v.$spacing-lg;
+  margin-bottom: v.$spacing-2xl;
+  background: linear-gradient(135deg, rgba(227, 126, 51, 0.08) 0%, rgba(226, 61, 89, 0.08) 100%);
+  border-radius: v.$radius-xl;
+  border: 1px solid v.$neutral-200;
 
-  .page-header__top {
-    margin-bottom: var(--spacing-sm);
+  .page-header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$spacing-xl;
+    width: 100%;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      text-align: center;
+    }
   }
+
+  .page-header__text { flex: 1; }
 
   .page-badge {
     display: inline-block;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: var(--text-xs);
-    font-weight: 600;
-    color: var(--primary);
-    background: var(--primary-light, rgba(227, 126, 51, 0.1));
-    border-radius: var(--radius-md);
+    padding: v.$spacing-xs v.$spacing-sm;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-semibold;
+    color: v.$primary-500;
+    background: rgba(227, 126, 51, 0.12);
+    border-radius: v.$radius-md;
+    margin-bottom: v.$spacing-sm;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   .page-title {
-    font-size: var(--text-4xl);
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0 0 var(--spacing-sm);
+    font-size: clamp(v.$font-size-2xl, 4vw, v.$font-size-4xl);
+    font-weight: v.$font-weight-extrabold;
+    color: v.$neutral-900;
+    margin: 0 0 v.$spacing-sm;
+    letter-spacing: v.$letter-spacing-tight;
   }
 
   .page-subtitle {
-    font-size: var(--text-base);
-    color: var(--text-secondary);
+    font-size: v.$font-size-base;
+    color: v.$neutral-600;
     margin: 0;
+  }
+
+  .page-header__graphic {
+    flex-shrink: 0;
+  }
+
+  .header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    font-size: 2.25rem;
+    background: v.$gradient-soft;
+    border-radius: v.$radius-xl;
   }
 }
 
@@ -39,14 +81,14 @@
   align-items: center;
   justify-content: center;
   min-height: 300px;
-  gap: var(--spacing-md);
-  color: var(--text-secondary);
+  gap: v.$spacing-md;
+  color: v.$neutral-600;
 
   .loading-spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid var(--border-light);
-    border-top-color: var(--primary);
+    border: 3px solid v.$neutral-200;
+    border-top-color: v.$primary-500;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
@@ -56,62 +98,69 @@
   to { transform: rotate(360deg); }
 }
 
-.section-title {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-lg);
-}
-
 // Stats KPI Cards
 .stats-section {
-  margin-bottom: var(--spacing-2xl);
+  margin-bottom: v.$spacing-2xl;
+  padding: 0 v.$spacing-lg;
+}
+
+.section-title {
+  font-size: v.$font-size-sm;
+  font-weight: v.$font-weight-semibold;
+  color: v.$neutral-500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 v.$spacing-lg;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: var(--spacing-lg);
+  gap: v.$spacing-lg;
 }
 
 .stat-card {
-  padding: var(--spacing-xl);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: v.$spacing-xl;
+  border-radius: v.$radius-xl;
+  border: 1.5px solid v.$neutral-200;
+  transition: transform v.$transition-base, box-shadow v.$transition-base, border-color v.$transition-base;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+    box-shadow: v.$shadow-lg;
+    border-color: v.$primary-100;
   }
 
   .stat-icon {
     font-size: 1.75rem;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: v.$spacing-sm;
   }
 
   .stat-value {
-    font-size: var(--text-3xl);
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-xs);
+    font-size: v.$font-size-3xl;
+    font-weight: v.$font-weight-extrabold;
+    color: v.$neutral-900;
+    margin-bottom: v.$spacing-xs;
   }
 
   .stat-label {
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-sm);
+    font-size: v.$font-size-sm;
+    color: v.$neutral-600;
+    margin-bottom: v.$spacing-sm;
   }
 
   .stat-meta {
-    font-size: var(--text-xs);
-    color: var(--success);
+    font-size: v.$font-size-xs;
+    color: v.$success-600;
     display: block;
+    font-weight: v.$font-weight-medium;
   }
 
   .stat-link {
-    font-size: var(--text-sm);
-    color: var(--primary);
+    font-size: v.$font-size-sm;
+    color: v.$primary-500;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: v.$font-weight-semibold;
 
     &:hover { text-decoration: underline; }
   }
@@ -119,13 +168,14 @@
 
 // Charts
 .charts-section {
-  margin-bottom: var(--spacing-2xl);
+  margin-bottom: v.$spacing-2xl;
+  padding: 0 v.$spacing-lg;
 }
 
 .charts-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-xl);
+  gap: v.$spacing-xl;
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
@@ -133,17 +183,19 @@
 }
 
 .chart-card {
-  padding: var(--spacing-xl);
+  padding: v.$spacing-xl;
+  border-radius: v.$radius-xl;
+  border: 1.5px solid v.$neutral-200;
 
   &--wide {
     grid-column: 1 / -1;
   }
 
   .chart-title {
-    font-size: var(--text-base);
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0 0 var(--spacing-lg);
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-semibold;
+    color: v.$neutral-900;
+    margin: 0 0 v.$spacing-lg;
   }
 }
 
@@ -170,13 +222,14 @@
 
 // Activity section
 .activity-section {
-  margin-bottom: var(--spacing-2xl);
+  margin-bottom: v.$spacing-2xl;
+  padding: 0 v.$spacing-lg;
 }
 
 .activity-grid {
   display: grid;
   grid-template-columns: 1fr 1.5fr;
-  gap: var(--spacing-xl);
+  gap: v.$spacing-xl;
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
@@ -184,22 +237,24 @@
 }
 
 .activity-card {
-  padding: var(--spacing-xl);
+  padding: v.$spacing-xl;
+  border-radius: v.$radius-xl;
+  border: 1.5px solid v.$neutral-200;
 
   .activity-title {
-    font-size: var(--text-base);
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0 0 var(--spacing-lg);
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-semibold;
+    color: v.$neutral-900;
+    margin: 0 0 v.$spacing-lg;
   }
 
   .section-link {
     display: inline-block;
-    margin-top: var(--spacing-md);
-    font-size: var(--text-sm);
-    color: var(--primary);
+    margin-top: v.$spacing-md;
+    font-size: v.$font-size-sm;
+    color: v.$primary-500;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: v.$font-weight-semibold;
 
     &:hover { text-decoration: underline; }
   }
@@ -208,37 +263,38 @@
 .planning-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-xl);
-  margin-bottom: var(--spacing-md);
+  gap: v.$spacing-xl;
+  margin-bottom: v.$spacing-md;
 
   .planning-stat {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: v.$spacing-xs;
 
     .planning-stat-value {
-      font-size: var(--text-2xl);
-      font-weight: 700;
-      color: var(--text-primary);
+      font-size: v.$font-size-2xl;
+      font-weight: v.$font-weight-extrabold;
+      color: v.$neutral-900;
     }
 
     .planning-stat-label {
-      font-size: var(--text-sm);
-      color: var(--text-secondary);
+      font-size: v.$font-size-sm;
+      color: v.$neutral-600;
     }
   }
 }
 
 .empty-msg {
-  font-size: var(--text-sm);
-  color: var(--text-muted);
+  font-size: v.$font-size-sm;
+  color: v.$neutral-500;
   font-style: italic;
-  margin: var(--spacing-md) 0 0;
+  margin: v.$spacing-md 0 0;
 }
 
 // Table
 .table-section {
-  margin-bottom: var(--spacing-2xl);
+  margin-bottom: v.$spacing-2xl;
+  padding: 0 v.$spacing-lg;
 }
 
 .table-wrapper {
@@ -246,28 +302,28 @@
 }
 
 .table-title {
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-lg);
+  font-size: v.$font-size-base;
+  font-weight: v.$font-weight-semibold;
+  color: v.$neutral-900;
+  margin: 0 0 v.$spacing-lg;
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--text-sm);
+  font-size: v.$font-size-sm;
 
   th,
   td {
-    padding: var(--spacing-md);
+    padding: v.$spacing-md;
     text-align: left;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid v.$neutral-200;
   }
 
   th {
-    font-weight: 600;
-    color: var(--text-secondary);
-    background: var(--bg-base, #f9fafb);
+    font-weight: v.$font-weight-semibold;
+    color: v.$neutral-600;
+    background: v.$neutral-50;
   }
 
   tr:hover td {
@@ -275,9 +331,9 @@
   }
 
   .table-link {
-    color: var(--primary);
+    color: v.$primary-500;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: v.$font-weight-semibold;
 
     &:hover { text-decoration: underline; }
   }
@@ -285,36 +341,39 @@
 
 // Quick links
 .quick-links-section {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: v.$spacing-2xl;
+  padding: 0 v.$spacing-lg;
 }
 
 .quick-links-title {
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-lg);
+  font-size: v.$font-size-base;
+  font-weight: v.$font-weight-semibold;
+  color: v.$neutral-900;
+  margin: 0 0 v.$spacing-lg;
 }
 
 .quick-links-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: var(--spacing-md);
+  gap: v.$spacing-md;
 }
 
 .quick-link {
   display: flex;
   align-items: center;
-  padding: var(--spacing-md);
-  background: var(--bg-base, #f9fafb);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
+  padding: v.$spacing-md v.$spacing-lg;
+  background: v.$neutral-50;
+  border: 1.5px solid v.$neutral-200;
+  border-radius: v.$radius-lg;
+  color: v.$neutral-800;
   text-decoration: none;
-  font-weight: 500;
-  font-size: var(--text-sm);
-  transition: background 0.2s ease, color 0.2s ease;
+  font-weight: v.$font-weight-medium;
+  font-size: v.$font-size-sm;
+  transition: all v.$transition-base;
 
   &:hover {
-    background: var(--primary-light, rgba(227, 126, 51, 0.1));
-    color: var(--primary);
+    background: v.$gradient-soft;
+    border-color: v.$primary-100;
+    color: v.$primary-600;
   }
 }

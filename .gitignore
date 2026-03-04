@@ -11,17 +11,24 @@ CLAUDE.md
 backEnd/Microservices/Offer/src/main/resources/application-local.properties
 
 # Firebase service account keys (never commit)
+firebase-credentials/*.json
 *-firebase-adminsdk-*.json
 **/serviceAccountKey*.json
 **/firebase-credentials*.json
 
 # GitHub token (never commit); set GITHUB_TOKEN env from this file locally
 githubToken.txt
+**/githubToken.txt
+
+# Credentials folder – Calendar, GitHub, etc. (never commit)
+credentials/*.json
+credentials/*.txt
 
 # MCP config (may contain SonarQube token and other secrets)
 .cursor/mcp.json
 
 # Google Cloud / Calendar API credentials (never commit)
+credentials/*calendar*.json
 *google*credentials*.json
 googleproject-*.json
 client_secret_*.json

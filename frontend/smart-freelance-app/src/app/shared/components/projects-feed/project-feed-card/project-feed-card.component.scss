@@ -1,0 +1,250 @@
+@import '../../../../../styles/variables';
+
+// ── Slide-up entrance animation ──────────────────────────────────────────────
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Card shell (matches list-projects project-card) ─────────────────────────
+.feed-card {
+  display: block;
+  background: $white;
+  border-radius: $radius-xl;
+  border: 1.5px solid $neutral-200;
+  padding: $spacing-lg;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+
+  animation: slideUp 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
+
+  transition: $transition-base;
+
+  &:hover {
+    border-color: $primary-500;
+    box-shadow: 0 6px 24px rgba($primary-500, 0.12);
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-500;
+    outline-offset: 3px;
+  }
+}
+
+// ── Row 1: Client ────────────────────────────────────────────────────────────
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.client-info {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  min-width: 0;
+}
+
+.client-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: $neutral-100;
+}
+
+.client-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.client-name {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $neutral-800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.star-row {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.star {
+  font-size: 13px;
+  color: $neutral-300;
+  line-height: 1;
+
+  &--filled { color: #F5C518; }
+}
+
+.rating-val {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $neutral-600;
+  margin-left: 4px;
+}
+
+.posted-ago {
+  font-size: $font-size-xs;
+  color: $neutral-500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+// ── Row 2: Title + Budget ────────────────────────────────────────────────────
+.title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $spacing-md;
+  margin-bottom: $spacing-sm;
+}
+
+.project-title {
+  margin: 0;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $neutral-900;
+  line-height: $line-height-snug;
+  flex: 1;
+  min-width: 0;
+}
+
+.project-budget {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $success-600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+// ── Row 3: Description (3-line clamp) ────────────────────────────────────────
+.project-desc {
+  margin: 0 0 $spacing-md;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+  color: $neutral-600;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ── Row 4: Skills (matches list-projects .skill) ──────────────────────────────
+.skills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-md;
+}
+
+.skill-pill {
+  display: inline-block;
+  padding: 2px $spacing-sm;
+  background: $neutral-100;
+  color: $neutral-600;
+  border-radius: $radius-full;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  border: 1px solid $neutral-200;
+
+  &--more {
+    background: $neutral-50;
+    color: $neutral-500;
+  }
+}
+
+// ── Row 5: Action buttons ────────────────────────────────────────────────────
+.card-actions {
+  display: flex;
+  gap: $spacing-sm;
+  padding-top: $spacing-md;
+  border-top: 1px solid $neutral-100;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-full;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: $transition-base;
+  white-space: nowrap;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  &:active { transform: scale(0.97); }
+
+  &--apply {
+    background: $gradient-primary;
+    color: $white;
+    flex: 1;
+
+    &:hover {
+      box-shadow: $shadow-primary;
+      transform: translateY(-1px);
+    }
+  }
+
+  &--save {
+    background: transparent;
+    color: $primary-500;
+    border: 1.5px solid rgba($primary-500, 0.3);
+
+    &:hover {
+      background: rgba($primary-500, 0.08);
+      border-color: $primary-500;
+    }
+
+    &.btn--saved {
+      background: rgba($primary-500, 0.1);
+      color: $primary-500;
+      border-color: $primary-500;
+    }
+  }
+
+  &--message {
+    background: transparent;
+    color: $neutral-600;
+    border: 1.5px solid $neutral-300;
+
+    &:hover {
+      color: $neutral-800;
+      background: $neutral-100;
+      border-color: $neutral-400;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .feed-card { padding: $spacing-md; }
+
+  .title-row { flex-direction: column; gap: 4px; }
+
+  .card-actions {
+    flex-wrap: wrap;
+    .btn--apply { width: 100%; order: -1; }
+  }
+}

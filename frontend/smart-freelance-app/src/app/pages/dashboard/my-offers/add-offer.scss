@@ -1,3 +1,6 @@
+@import '../../../../styles/variables';
+
+
 .add-offer-page {
   position: relative;
   min-height: 100%;
@@ -37,7 +40,19 @@
     color: #0f172a;
     text-decoration: underline;
   }
+}
 
+.offer-form-page {
+  max-width: 640px;
+  padding: $spacing-3xl $spacing-lg;
+  margin: 0 auto;
+  font-family: $font-family;
+
+  @include breakpoint(md) {
+    padding: $spacing-3xl $spacing-2xl;
+  }
+
+  // ── Header ─────────────────────────────────────────────────────
   .page-title {
     font-size: clamp(1.5rem, 4vw, 2rem);
     font-weight: 700;

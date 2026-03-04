@@ -1,0 +1,140 @@
+<div class="freelancer-home">
+  <!-- Hero / Welcome -->
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">Freelancer</span>
+      <h1 class="hero-title">Welcome back, {{ displayName }}</h1>
+      <p class="hero-subtitle">Find projects that match your skills and grow your freelance business</p>
+    </div>
+    <div class="hero-graphic" aria-hidden="true">
+      <span class="hero-icon">🚀</span>
+    </div>
+  </section>
+
+  <!-- KPI Stats -->
+  <section class="stats-section" *ngIf="!isLoadingStats">
+    <div class="stats-grid">
+      <a routerLink="/dashboard/my-applications" class="stat-card stat-card--applications">
+        <div class="stat-icon">📝</div>
+        <span class="stat-value">{{ myApplicationsCount }}</span>
+        <span class="stat-label">My Applications</span>
+      </a>
+      <a routerLink="/dashboard/my-contracts" class="stat-card stat-card--contracts">
+        <div class="stat-icon">📋</div>
+        <span class="stat-value">{{ activeContractsCount }}</span>
+        <span class="stat-label">Active Contracts</span>
+      </a>
+      <a routerLink="/dashboard/my-offers" class="stat-card stat-card--offers">
+        <div class="stat-icon">💼</div>
+        <span class="stat-value">{{ myOffersCount }}</span>
+        <span class="stat-label">My Offers</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Quick Actions -->
+  <section class="quick-actions">
+    <h2 class="section-label">Quick actions</h2>
+    <div class="quick-actions-grid">
+      <a routerLink="/dashboard/browse-jobs" class="quick-action quick-action--primary">
+        <span class="quick-action-icon">🔍</span>
+        <span>Browse Jobs</span>
+      </a>
+      <a routerLink="/dashboard/my-offers/add" class="quick-action">
+        <span class="quick-action-icon">➕</span>
+        <span>Create Offer</span>
+      </a>
+      <a routerLink="/dashboard/my-portfolio" class="quick-action">
+        <span class="quick-action-icon">📂</span>
+        <span>My Portfolio</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Recommended For You -->
+  <section class="recommendations-section" *ngIf="recommendedProjects.length > 0 || isLoadingRecommendations">
+    <h2 class="section-title">
+      <span class="section-title-icon">🔥</span>
+      Recommended For You
+    </h2>
+    @if (isLoadingRecommendations) {
+      <div class="recommendations-loading">
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <p>Finding projects that match your skills...</p>
+      </div>
+    } @else if (recommendedProjects.length > 0) {
+      <div class="recommended-grid">
+        @for (project of recommendedProjects.slice(0, 3); track project.id) {
+          <a [routerLink]="['/dashboard/browse-jobs', project.id, 'show']" class="recommended-card">
+            <h3 class="rec-title">{{ project.title }}</h3>
+            <p class="rec-desc">{{ project.description }}</p>
+            <div class="rec-meta">
+              <span class="rec-budget">${{ (project.budget ?? 0) | number }}</span>
+              @if (project.skillsRequiered) {
+                <span class="rec-skills">{{ formatSkills(project.skillsRequiered) }}</span>
+              }
+            </div>
+            <span class="rec-cta">View Project →</span>
+          </a>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Project Feed -->
+  <section class="feed-section">
+    @if (isFetching()) {
+      <div class="feed-skeleton" aria-label="Loading projects" role="status">
+        @for (i of [1,2,3]; track i) {
+          <div class="skeleton-card">
+            <div class="sk-header">
+              <div class="sk-avatar"></div>
+              <div class="sk-lines">
+                <div class="sk-line sk-line--md"></div>
+                <div class="sk-line sk-line--sm"></div>
+              </div>
+            </div>
+            <div class="sk-line sk-line--title"></div>
+            <div class="sk-line"></div>
+            <div class="sk-pills">
+              <div class="sk-pill"></div>
+              <div class="sk-pill"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <header class="feed-header">
+        <h2 class="feed-title">Browse Jobs</h2>
+        <div class="feed-toolbar">
+          <input
+            type="search"
+            class="feed-search"
+            placeholder="Search projects..."
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearchChange()"
+            aria-label="Search projects" />
+          <select
+            class="feed-sort"
+            [(ngModel)]="sortOption"
+            (ngModelChange)="onSortChange()"
+            aria-label="Sort projects">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="budget-high">Budget: High to low</option>
+            <option value="budget-low">Budget: Low to high</option>
+          </select>
+        </div>
+      </header>
+      <app-projects-feed
+        [projects]="displayedProjects()"
+        [totalCount]="totalCount()"
+        [currentPage]="currentPage()"
+        [totalPages]="totalPages()"
+        [pageSize]="pageSize"
+        [startIndex]="startIndex()"
+        [endIndex]="endIndex()"
+        (pageChange)="goToPage($event)" />
+    }
+  </section>
+</div>

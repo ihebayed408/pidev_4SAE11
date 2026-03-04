@@ -1,10 +1,15 @@
 <div class="admin-dashboard-page">
   <header class="page-header">
-    <div class="page-header__top">
-      <span class="page-badge">Admin</span>
+    <div class="page-header__content">
+      <div class="page-header__text">
+        <span class="page-badge">Admin</span>
+        <h1 class="page-title">Welcome back, {{ displayName }}</h1>
+        <p class="page-subtitle">Real-time statistics and insights across all platform microservices</p>
+      </div>
+      <div class="page-header__graphic" aria-hidden="true">
+        <span class="header-icon">📊</span>
+      </div>
     </div>
-    <h1 class="page-title">Dashboard Overview</h1>
-    <p class="page-subtitle">Real-time statistics and insights across all platform microservices</p>
   </header>
 
   @if (loading) {
@@ -174,6 +179,7 @@
           <a routerLink="/admin/projects" class="quick-link">Browse projects</a>
           <a routerLink="/admin/planning" class="quick-link">Planning & progress</a>
           <a routerLink="/admin/tasks" class="quick-link">Task management</a>
+          <a routerLink="/admin/calendar" class="quick-link">Calendar</a>
         </div>
       </app-card>
     </section>
