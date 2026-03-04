@@ -176,6 +176,8 @@ export const routes: Routes = [
       { path: 'settings', redirectTo: 'profile', pathMatch: 'full' },
       { path: 'my-contracts', loadComponent: () => import('./pages/dashboard/my-contracts/my-contracts').then(m => m.MyContracts) },
       { path: 'my-contracts/:id', loadComponent: () => import('./pages/dashboard/my-contracts/contract-detail/contract-detail').then(m => m.ContractDetail) },
+      { path: 'freelancer-search', loadComponent: () => import('./pages/dashboard/freelancer-search/freelancer-search').then(m => m.FreelancerSearch), title: 'Find Freelancers' },
+      { path: 'freelancer-portfolio/:id', loadComponent: () => import('./pages/dashboard/freelancer-portfolio/freelancer-portfolio').then(m => m.DashboardFreelancerPortfolio), title: 'Freelancer Profile' },
     ]
   },
 
@@ -223,6 +225,7 @@ export const routes: Routes = [
       { path: 'github', loadComponent: () => import('./pages/dashboard/github/github').then(m => m.Github), title: 'GitHub' },
       { path: 'evaluations', loadComponent: () => import('./pages/admin/admin-dashboard/admin-dashboard').then(m => m.AdminDashboard) },
       { path: 'skill-stats', loadComponent: () => import('./pages/admin/skill-stats/skill-stats').then(m => m.SkillStats) },
+      { path: 'contract-stats', loadComponent: () => import('./pages/admin/contract-stats/contract-stats').then(m => m.ContractStats) },
       { path: 'skills', loadComponent: () => import('./pages/admin/skill-management/skill-management').then(m => m.AdminSkillManagement) },
       { path: 'reviews', loadComponent: () => import('./pages/admin/review-management/review-management').then(m => m.ReviewManagement) },
       { path: 'settings', loadComponent: () => import('./pages/admin/admin-dashboard/admin-dashboard').then(m => m.AdminDashboard) },

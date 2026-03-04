@@ -1,0 +1,425 @@
+@import '../../../../styles/variables';
+
+// ── Global ──────────────────────────────────────────────────────────────────
+.dfp-wrap { background: $neutral-50; min-height: 100vh; }
+
+.dfp-loading, .dfp-not-found {
+  text-align: center;
+  padding: 6rem 1rem;
+  &__icon { font-size: 5rem; margin-bottom: 1rem; display: block; }
+}
+
+// ── Back button ─────────────────────────────────────────────────────────────
+.dfp-back {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.75);
+  font-size: .85rem;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: $spacing-lg;
+  display: inline-block;
+  transition: color $transition-fast;
+  &:hover { color: $white; }
+}
+
+// ── Hero ────────────────────────────────────────────────────────────────────
+.dfp-hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+  color: $white;
+  padding: $spacing-2xl 0 $spacing-xl;
+
+  // Constrain hero content
+  > * { max-width: 1280px; margin-left: auto; margin-right: auto; padding-left: $spacing-lg; padding-right: $spacing-lg; }
+
+  &__body {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-lg;
+    flex-wrap: wrap;
+  }
+
+  &__avatar-col { flex-shrink: 0; }
+
+  &__identity { flex: 1; min-width: 0; }
+
+  &__name {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: $font-weight-extrabold;
+    margin-bottom: .25rem;
+  }
+
+  &__title {
+    font-size: 1rem;
+    opacity: .75;
+    margin-bottom: .5rem;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    font-size: .82rem;
+    opacity: .7;
+    margin-bottom: .25rem;
+  }
+
+  &__stats {
+    display: flex;
+    gap: $spacing-lg;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: .5rem;
+  }
+
+  &__ctas {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+    margin-top: $spacing-lg;
+  }
+}
+
+.dfp-rate { font-weight: $font-weight-bold; color: #fdba74; }
+
+// ── Avatar ──────────────────────────────────────────────────────────────────
+.dfp-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.25);
+  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+
+  &--img { object-fit: cover; }
+
+  &--initials {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $white;
+    font-weight: $font-weight-extrabold;
+    font-size: 2rem;
+    flex-shrink: 0;
+  }
+}
+
+// ── Hero stars ───────────────────────────────────────────────────────────────
+.dfp-stars      { display: flex; align-items: center; gap: 1px; }
+.dfp-star       { color: rgba(255,255,255,.3); font-size: 1rem; &--filled { color: $warning-500; } }
+.dfp-rating-val { font-size: .9rem; font-weight: $font-weight-bold; margin-left: .35rem; }
+.dfp-reviews    { font-size: .8rem; opacity: .6; margin-left: .2rem; }
+
+// ── Hero quick stats ─────────────────────────────────────────────────────────
+.dfp-stat {
+  text-align: center;
+  &__val { display: block; font-size: 1.5rem; font-weight: $font-weight-extrabold; line-height: 1; }
+  &__lbl { display: block; font-size: .72rem; opacity: .6; margin-top: .2rem; }
+}
+
+// ── Ghost button ─────────────────────────────────────────────────────────────
+.dfp-btn-ghost {
+  background: rgba(255,255,255,.12);
+  border: 1.5px solid rgba(255,255,255,.3);
+  color: $white;
+  &:hover { background: rgba(255,255,255,.2); color: $white; }
+}
+
+// ── Body ────────────────────────────────────────────────────────────────────
+.dfp-body {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: $spacing-2xl $spacing-lg $spacing-3xl;
+}
+
+// ── Section card ─────────────────────────────────────────────────────────────
+.dfp-section {
+  background: $white;
+  border: 1px solid $neutral-200;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-xs;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-lg;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: $spacing-lg;
+  }
+
+  &__bar {
+    width: 4px;
+    height: 28px;
+    border-radius: 4px;
+    background: $gradient-primary;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $neutral-900;
+    margin: 0;
+  }
+}
+
+// ── Bio ──────────────────────────────────────────────────────────────────────
+.dfp-bio {
+  color: $neutral-600;
+  line-height: $line-height-loose;
+  white-space: pre-line;
+  margin-bottom: $spacing-lg;
+  font-size: $font-size-base;
+}
+
+.dfp-sub-title {
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  color: $neutral-800;
+  margin-bottom: $spacing-md;
+}
+
+// ── Timeline ─────────────────────────────────────────────────────────────────
+.dfp-timeline { display: flex; flex-direction: column; }
+
+.dfp-timeline__item {
+  display: flex;
+  gap: $spacing-md;
+  position: relative;
+}
+
+.dfp-timeline__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: $primary-500;
+  margin-top: .35rem;
+  flex-shrink: 0;
+  z-index: 1;
+  border: 2px solid $white;
+  box-shadow: 0 0 0 2px $primary-100;
+}
+
+.dfp-timeline__line {
+  position: absolute;
+  left: 5px;
+  top: 22px;
+  bottom: -8px;
+  width: 2px;
+  background: $neutral-200;
+}
+
+.dfp-timeline__content { padding-bottom: $spacing-lg; flex: 1; }
+
+.dfp-tl-role    { font-weight: $font-weight-bold; color: $neutral-900; margin: 0; font-size: $font-size-sm; }
+.dfp-tl-company { color: $primary-500; font-size: .8rem; font-weight: $font-weight-semibold; margin: .1rem 0; }
+.dfp-tl-desc    { color: $neutral-500; font-size: .82rem; margin: 0; line-height: $line-height-relaxed; }
+
+// ── Skills ───────────────────────────────────────────────────────────────────
+.dfp-skill-group { margin-bottom: $spacing-lg; }
+
+.dfp-skill-category {
+  display: inline-block;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #7c3aed;
+  background: #ede9fe;
+  padding: .2rem .7rem;
+  border-radius: $radius-full;
+  margin-bottom: .75rem;
+}
+
+.dfp-skill-list { display: flex; flex-direction: column; gap: .6rem; }
+
+.dfp-skill-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+
+.dfp-skill-name {
+  width: 140px;
+  flex-shrink: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $neutral-700;
+}
+
+.dfp-skill-bar-wrap {
+  flex: 1;
+  min-width: 80px;
+  height: 7px;
+  background: $neutral-100;
+  border-radius: $radius-full;
+  overflow: hidden;
+}
+
+.dfp-skill-bar {
+  height: 100%;
+  border-radius: $radius-full;
+  transition: width .6s $ease-out;
+}
+
+.dfp-skill-level { font-size: $font-size-xs; flex-shrink: 0; }
+
+.dfp-skill-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.dfp-badge-verified {
+  font-size: 10px;
+  font-weight: $font-weight-semibold;
+  background: $success-100;
+  color: $success-700;
+  padding: 1px 7px;
+  border-radius: $radius-full;
+}
+
+.dfp-badge-unverified {
+  font-size: 10px;
+  font-weight: $font-weight-semibold;
+  background: $neutral-100;
+  color: $neutral-500;
+  padding: 1px 7px;
+  border-radius: $radius-full;
+}
+
+// ── Project cards ─────────────────────────────────────────────────────────────
+.dfp-proj-card {
+  border: 1px solid $neutral-200;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  background: $white;
+  box-shadow: $shadow-xs;
+  transition: transform $transition-base, box-shadow $transition-base;
+
+  &:hover { transform: translateY(-3px); box-shadow: $shadow-md; }
+
+  &__thumb { position: relative; }
+
+  &__rating {
+    position: absolute;
+    top: .6rem;
+    right: .6rem;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(6px);
+    padding: .2rem .55rem;
+    border-radius: $radius-full;
+    font-size: .78rem;
+    font-weight: $font-weight-bold;
+    color: $neutral-900;
+  }
+
+  &__body { padding: .9rem 1rem; }
+
+  &__title {
+    font-weight: $font-weight-bold;
+    font-size: $font-size-sm;
+    color: $neutral-900;
+    margin-bottom: .4rem;
+  }
+
+  &__meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: .76rem;
+    color: $neutral-500;
+  }
+}
+
+.dfp-proj-thumb {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+// ── Testimonials ─────────────────────────────────────────────────────────────
+.dfp-testimonial {
+  background: $neutral-50;
+  border: 1px solid $neutral-200;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  height: 100%;
+  margin: 0;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: .9rem;
+  }
+}
+
+.dfp-t-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $white;
+  font-weight: $font-weight-bold;
+  font-size: .85rem;
+  flex-shrink: 0;
+}
+
+.dfp-t-name    { font-weight: $font-weight-bold; font-size: .88rem; color: $neutral-900; margin: 0; }
+.dfp-t-project { font-size: .75rem; color: $neutral-400; margin: 0; }
+.dfp-t-stars   { font-size: .9rem; flex-shrink: 0; }
+.dfp-t-review  { color: $neutral-600; font-size: .84rem; line-height: $line-height-relaxed; font-style: italic; margin: 0; }
+
+// ── Engagement Metrics ───────────────────────────────────────────────────────
+.dfp-metrics {
+  border-color: #ddd6fe;
+  background: linear-gradient(135deg, #faf5ff 0%, $white 100%);
+}
+
+.dfp-stat-card {
+  background: $white;
+  border: 1px solid $neutral-200;
+  border-radius: $radius-lg;
+  padding: 1.1rem 1.25rem;
+  box-shadow: $shadow-xs;
+
+  &__label { font-size: $font-size-xs; text-transform: uppercase; letter-spacing: .06em; color: $neutral-400; font-weight: $font-weight-semibold; margin: 0 0 .3rem; }
+  &__val   { font-size: 1.8rem; font-weight: $font-weight-extrabold; color: $neutral-900; line-height: 1; margin: 0; }
+  &__sub   { font-size: .75rem; color: $neutral-400; margin: .3rem 0 0; }
+  &__change { font-size: .82rem; font-weight: $font-weight-bold; margin: .3rem 0 0; }
+
+  &--highlight { border-color: #fed7aa; background: #fff7ed; }
+}
+
+.dfp-change--up   { color: $success-600; }
+.dfp-change--down { color: $error-600; }
+.dfp-change-sub   { font-weight: $font-weight-normal; font-size: .74rem; color: $neutral-400; margin-left: .3rem; }
+
+.dfp-chart-card {
+  background: $white;
+  border: 1px solid $neutral-200;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-xs;
+
+  &__title { font-size: .85rem; font-weight: $font-weight-semibold; color: $neutral-600; margin-bottom: $spacing-md; }
+}
+
+.dfp-chart-wrap { height: 220px; }
+
+// ── CTA banner ───────────────────────────────────────────────────────────────
+.dfp-cta-banner {
+  background: $gradient-primary;
+  color: $white;
+  padding: 3.5rem 1rem;
+
+  &__title { font-size: 1.6rem; font-weight: $font-weight-extrabold; margin-bottom: .5rem; }
+  &__sub   { opacity: .85; margin-bottom: $spacing-lg; }
+}

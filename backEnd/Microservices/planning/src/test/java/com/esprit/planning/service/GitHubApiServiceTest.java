@@ -27,7 +27,7 @@ class GitHubApiServiceTest {
 
     @Test
     void isEnabled_whenTokenEmpty_returnsFalse() {
-        GitHubApiService service = new GitHubApiService(mock(RestTemplate.class), "", false);
+        GitHubApiService service = new GitHubApiService(mock(RestTemplate.class), "", "", false);
         assertThat(service.isEnabled()).isFalse();
     }
 
@@ -51,7 +51,7 @@ class GitHubApiServiceTest {
 
     @Test
     void getBranches_whenDisabled_returnsEmptyList() {
-        GitHubApiService service = new GitHubApiService(mock(RestTemplate.class), "", false);
+        GitHubApiService service = new GitHubApiService(mock(RestTemplate.class), "", "", false);
         List<GitHubBranchDto> result = service.getBranches("owner", "repo");
         assertThat(result).isEmpty();
     }
@@ -97,7 +97,7 @@ class GitHubApiServiceTest {
 
     @Test
     void getLatestCommit_whenDisabled_returnsNull() {
-        GitHubApiService service = new GitHubApiService(mock(RestTemplate.class), "", false);
+        GitHubApiService service = new GitHubApiService(mock(RestTemplate.class), "", "", false);
         GitHubCommitDto result = service.getLatestCommit("o", "r", null);
         assertThat(result).isNull();
     }
@@ -131,7 +131,7 @@ class GitHubApiServiceTest {
 
     @Test
     void getCommits_whenDisabled_returnsEmptyList() {
-        GitHubApiService service = new GitHubApiService(mock(RestTemplate.class), "", false);
+        GitHubApiService service = new GitHubApiService(mock(RestTemplate.class), "", "", false);
         List<GitHubCommitDto> result = service.getCommits("o", "r", null, 30);
         assertThat(result).isEmpty();
     }
@@ -153,7 +153,7 @@ class GitHubApiServiceTest {
 
     @Test
     void createIssue_whenDisabled_returnsNull() {
-        GitHubApiService service = new GitHubApiService(mock(RestTemplate.class), "", false);
+        GitHubApiService service = new GitHubApiService(mock(RestTemplate.class), "", "", false);
         GitHubIssueResponseDto result = service.createIssue("o", "r", new GitHubIssueRequest("Title", "Body"));
         assertThat(result).isNull();
     }

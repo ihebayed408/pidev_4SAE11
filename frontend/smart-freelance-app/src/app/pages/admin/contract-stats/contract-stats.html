@@ -1,0 +1,154 @@
+<div class="stats-page">
+
+  <div class="page-header">
+    <h1>Contract &amp; Conflict Statistics</h1>
+    <p class="subtitle">Platform-wide overview of contract outcomes and conflict resolution</p>
+  </div>
+
+  <div class="charts-grid">
+
+    <!-- ── Contract Status Chart ───────────────────────────── -->
+    <div class="chart-card">
+      <div class="card-header">
+        <div class="card-icon">📄</div>
+        <div>
+          <h2>Contracts by Status</h2>
+          <p>Distribution of all contracts across statuses</p>
+        </div>
+      </div>
+
+      @if (isLoadingContracts) {
+        <div class="loading"><div class="spinner"></div><span>Loading…</span></div>
+      } @else if (contractError) {
+        <div class="error-msg">{{ contractError }}</div>
+      } @else if (contractStats) {
+        <div class="chart-body">
+          <div class="donut-wrap">
+            <canvas #contractChart width="180" height="180"></canvas>
+            <div class="donut-center">
+              <span class="donut-pct">{{ completedPct }}%</span>
+              <span class="donut-label">Completed</span>
+            </div>
+          </div>
+
+          <div class="legend-list">
+            <div class="legend-item">
+              <span class="dot" style="background:#10B981"></span>
+              <span class="leg-label">Completed</span>
+              <span class="leg-val">{{ contractStats.completed }}</span>
+            </div>
+            <div class="legend-item">
+              <span class="dot" style="background:#6366F1"></span>
+              <span class="leg-label">Active</span>
+              <span class="leg-val">{{ contractStats.active }}</span>
+            </div>
+            <div class="legend-item">
+              <span class="dot" style="background:#EF4444"></span>
+              <span class="leg-label">In Conflict</span>
+              <span class="leg-val">{{ contractStats.inConflict }}</span>
+            </div>
+            <div class="legend-item">
+              <span class="dot" style="background:#9CA3AF"></span>
+              <span class="leg-label">Cancelled</span>
+              <span class="leg-val">{{ contractStats.cancelled }}</span>
+            </div>
+            <div class="legend-item">
+              <span class="dot" style="background:#F59E0B"></span>
+              <span class="leg-label">Pending Signature</span>
+              <span class="leg-val">{{ contractStats.pendingSignature }}</span>
+            </div>
+            <div class="legend-item">
+              <span class="dot" style="background:#D1D5DB"></span>
+              <span class="leg-label">Draft</span>
+              <span class="leg-val">{{ contractStats.draft }}</span>
+            </div>
+            <div class="legend-item total-row">
+              <span class="leg-label">Total</span>
+              <span class="leg-val">{{ contractStats.total }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-row">
+          <div class="summary-card green">
+            <span class="sum-num">{{ contractStats.completed }}</span>
+            <span class="sum-label">Completed</span>
+          </div>
+          <div class="summary-card red">
+            <span class="sum-num">{{ contractStats.cancelled }}</span>
+            <span class="sum-label">Cancelled</span>
+          </div>
+          <div class="summary-card orange">
+            <span class="sum-num">{{ contractStats.inConflict }}</span>
+            <span class="sum-label">In Conflict</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- ── Conflict Resolution Chart ──────────────────────── -->
+    <div class="chart-card">
+      <div class="card-header">
+        <div class="card-icon">⚖️</div>
+        <div>
+          <h2>Conflict Resolution</h2>
+          <p>Resolved vs unresolved conflicts</p>
+        </div>
+      </div>
+
+      @if (isLoadingConflicts) {
+        <div class="loading"><div class="spinner"></div><span>Loading…</span></div>
+      } @else if (conflictError) {
+        <div class="error-msg">{{ conflictError }}</div>
+      } @else if (conflictStats) {
+        <div class="chart-body">
+          <div class="donut-wrap">
+            <canvas #conflictChart width="180" height="180"></canvas>
+            <div class="donut-center">
+              <span class="donut-pct">{{ resolvedPct }}%</span>
+              <span class="donut-label">Resolved</span>
+            </div>
+          </div>
+
+          <div class="legend-list">
+            <div class="legend-item">
+              <span class="dot" style="background:#10B981"></span>
+              <span class="leg-label">Resolved</span>
+              <span class="leg-val">{{ conflictStats.resolved }}</span>
+            </div>
+            <div class="legend-item">
+              <span class="dot" style="background:#EF4444"></span>
+              <span class="leg-label">Open</span>
+              <span class="leg-val">{{ conflictStats.open }}</span>
+            </div>
+            <div class="legend-item">
+              <span class="dot" style="background:#F59E0B"></span>
+              <span class="leg-label">In Review</span>
+              <span class="leg-val">{{ conflictStats.inReview }}</span>
+            </div>
+            <div class="legend-item total-row">
+              <span class="leg-label">Total</span>
+              <span class="leg-val">{{ conflictStats.total }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-row">
+          <div class="summary-card green">
+            <span class="sum-num">{{ conflictStats.resolved }}</span>
+            <span class="sum-label">Resolved</span>
+          </div>
+          <div class="summary-card red">
+            <span class="sum-num">{{ conflictStats.open }}</span>
+            <span class="sum-label">Open</span>
+          </div>
+          <div class="summary-card orange">
+            <span class="sum-num">{{ conflictStats.inReview }}</span>
+            <span class="sum-label">In Review</span>
+          </div>
+        </div>
+      }
+    </div>
+
+  </div>
+</div>

@@ -132,6 +132,91 @@
 
     }
   </app-card>
+
+  <!-- ── STATISTICS CHARTS ──────────────────────────────────────── -->
+  <div class="charts-section">
+
+    <!-- Contract Status Chart -->
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <span class="chart-icon">📄</span>
+        <div>
+          <h2>Contracts by Status</h2>
+          <p>Distribution across all statuses</p>
+        </div>
+      </div>
+
+      @if (isLoadingContractStats) {
+        <div class="chart-loading"><div class="chart-spinner"></div><span>Loading…</span></div>
+      } @else if (contractStatsError) {
+        <div class="chart-error">{{ contractStatsError }}</div>
+      } @else if (contractStats) {
+        <div class="chart-body">
+          <div class="donut-wrap">
+            <canvas #contractChart width="180" height="180"></canvas>
+            <div class="donut-center">
+              <span class="donut-pct">{{ completedPct }}%</span>
+              <span class="donut-label">Completed</span>
+            </div>
+          </div>
+          <div class="legend-list">
+            <div class="legend-item"><span class="dot" style="background:#10B981"></span><span class="leg-label">Completed</span><span class="leg-val">{{ contractStats.completed }}</span></div>
+            <div class="legend-item"><span class="dot" style="background:#6366F1"></span><span class="leg-label">Active</span><span class="leg-val">{{ contractStats.active }}</span></div>
+            <div class="legend-item"><span class="dot" style="background:#EF4444"></span><span class="leg-label">In Conflict</span><span class="leg-val">{{ contractStats.inConflict }}</span></div>
+            <div class="legend-item"><span class="dot" style="background:#9CA3AF"></span><span class="leg-label">Cancelled</span><span class="leg-val">{{ contractStats.cancelled }}</span></div>
+            <div class="legend-item"><span class="dot" style="background:#F59E0B"></span><span class="leg-label">Pending Signature</span><span class="leg-val">{{ contractStats.pendingSignature }}</span></div>
+            <div class="legend-item"><span class="dot" style="background:#D1D5DB"></span><span class="leg-label">Draft</span><span class="leg-val">{{ contractStats.draft }}</span></div>
+            <div class="legend-item total-row"><span class="leg-label">Total</span><span class="leg-val">{{ contractStats.total }}</span></div>
+          </div>
+        </div>
+        <div class="chart-summary-row">
+          <div class="sum-card green"><span class="sum-num">{{ contractStats.completed }}</span><span class="sum-label">Completed</span></div>
+          <div class="sum-card red"><span class="sum-num">{{ contractStats.cancelled }}</span><span class="sum-label">Cancelled</span></div>
+          <div class="sum-card orange"><span class="sum-num">{{ contractStats.inConflict }}</span><span class="sum-label">In Conflict</span></div>
+        </div>
+      }
+    </div>
+
+    <!-- Conflict Resolution Chart -->
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <span class="chart-icon">⚖️</span>
+        <div>
+          <h2>Conflict Resolution</h2>
+          <p>Resolved vs unresolved conflicts</p>
+        </div>
+      </div>
+
+      @if (isLoadingConflictStats) {
+        <div class="chart-loading"><div class="chart-spinner"></div><span>Loading…</span></div>
+      } @else if (conflictStatsError) {
+        <div class="chart-error">{{ conflictStatsError }}</div>
+      } @else if (conflictStats) {
+        <div class="chart-body">
+          <div class="donut-wrap">
+            <canvas #conflictChart width="180" height="180"></canvas>
+            <div class="donut-center">
+              <span class="donut-pct">{{ resolvedPct }}%</span>
+              <span class="donut-label">Resolved</span>
+            </div>
+          </div>
+          <div class="legend-list">
+            <div class="legend-item"><span class="dot" style="background:#10B981"></span><span class="leg-label">Resolved</span><span class="leg-val">{{ conflictStats.resolved }}</span></div>
+            <div class="legend-item"><span class="dot" style="background:#EF4444"></span><span class="leg-label">Open</span><span class="leg-val">{{ conflictStats.open }}</span></div>
+            <div class="legend-item"><span class="dot" style="background:#F59E0B"></span><span class="leg-label">In Review</span><span class="leg-val">{{ conflictStats.inReview }}</span></div>
+            <div class="legend-item total-row"><span class="leg-label">Total</span><span class="leg-val">{{ conflictStats.total }}</span></div>
+          </div>
+        </div>
+        <div class="chart-summary-row">
+          <div class="sum-card green"><span class="sum-num">{{ conflictStats.resolved }}</span><span class="sum-label">Resolved</span></div>
+          <div class="sum-card red"><span class="sum-num">{{ conflictStats.open }}</span><span class="sum-label">Open</span></div>
+          <div class="sum-card orange"><span class="sum-num">{{ conflictStats.inReview }}</span><span class="sum-label">In Review</span></div>
+        </div>
+      }
+    </div>
+
+  </div>
+
 </div>
 
 <!-- ══════════════ DELETE CONFIRM MODAL ══════════════════════ -->

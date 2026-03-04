@@ -28,6 +28,9 @@ spring:
               - Accept
               - Origin
               - X-Requested-With
+            exposedHeaders:
+              - Content-Disposition
+              - Content-Type
             allowCredentials: true
       discovery:
         locator:

@@ -25,6 +25,32 @@ export interface ContractConflict {
   resolution?: string;
 }
 
+export interface ConflictComment {
+  id?: number;
+  conflictId?: number;
+  userId: number;
+  content: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ContractStats {
+  total: number;
+  draft: number;
+  pendingSignature: number;
+  active: number;
+  completed: number;
+  cancelled: number;
+  inConflict: number;
+}
+
+export interface ConflictStats {
+  total: number;
+  open: number;
+  inReview: number;
+  resolved: number;
+}
+
 export interface Contract {
   id?: number;
   clientId: number;
@@ -103,6 +129,14 @@ export class ContractService {
     return this.http.delete<void>(`${this.base}/contracts/${id}`);
   }
 
+  exportPdf(id: number, includeAttachments = false, clientName?: string | null, freelancerName?: string | null): Observable<Blob> {
+    return this.http.post(
+      `${this.base}/contracts/${id}/export-pdf`,
+      { includeAttachments, clientName, freelancerName },
+      { responseType: 'blob' }
+    );
+  }
+
   // ── Conflicts ────────────────────────────────────────────────────────────
 
   getConflicts(contractId: number): Observable<ContractConflict[]> {
@@ -111,5 +145,33 @@ export class ContractService {
 
   reportConflict(contractId: number, payload: Pick<ContractConflict, 'reason' | 'description' | 'evidenceUrl'> & { raisedById: number }): Observable<ContractConflict> {
     return this.http.post<ContractConflict>(`${this.base}/conflicts/contract/${contractId}`, payload);
+  }
+
+  // ── Statistics ───────────────────────────────────────────────────────────
+
+  getContractStats(): Observable<ContractStats> {
+    return this.http.get<ContractStats>(`${this.base}/contracts/stats`);
+  }
+
+  getConflictStats(): Observable<ConflictStats> {
+    return this.http.get<ConflictStats>(`${this.base}/conflicts/stats`);
+  }
+
+  // ── Comments ─────────────────────────────────────────────────────────────
+
+  getComments(conflictId: number): Observable<ConflictComment[]> {
+    return this.http.get<ConflictComment[]>(`${this.base}/comments/conflict/${conflictId}`);
+  }
+
+  addComment(conflictId: number, userId: number, content: string): Observable<ConflictComment> {
+    return this.http.post<ConflictComment>(`${this.base}/comments/conflict/${conflictId}`, { userId, content });
+  }
+
+  updateComment(id: number, content: string): Observable<ConflictComment> {
+    return this.http.put<ConflictComment>(`${this.base}/comments/${id}`, { content });
+  }
+
+  deleteComment(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/comments/${id}`);
   }
 }

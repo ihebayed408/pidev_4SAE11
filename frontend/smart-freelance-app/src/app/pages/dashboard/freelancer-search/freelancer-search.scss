@@ -1,0 +1,332 @@
+@import '../../../../styles/variables';
+
+// ── Page wrapper ────────────────────────────────────────────────────────────
+.fs-page {
+  padding: $spacing-xl $spacing-lg;
+  max-width: 1280px;
+  margin: 0 auto;
+  font-family: $font-family;
+
+  @include breakpoint(md) {
+    padding: $spacing-2xl $spacing-2xl;
+  }
+}
+
+// ── Header ──────────────────────────────────────────────────────────────────
+.fs-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  margin-bottom: $spacing-xl;
+
+  &__title {
+    font-size: $font-size-3xl;
+    font-weight: $font-weight-extrabold;
+    color: $neutral-900;
+    margin: 0 0 $spacing-xs;
+    background: $gradient-primary;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  &__sub {
+    margin: 0;
+    color: $neutral-500;
+    font-size: $font-size-base;
+  }
+}
+
+.fs-count {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $neutral-500;
+  background: $neutral-100;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-full;
+}
+
+// ── Toolbar (search + sort) ──────────────────────────────────────────────────
+.fs-toolbar {
+  display: flex;
+  gap: $spacing-md;
+  flex-wrap: wrap;
+  margin-bottom: $spacing-md;
+}
+
+.fs-search-wrap {
+  flex: 1;
+  min-width: 240px;
+  position: relative;
+}
+
+.fs-search-icon {
+  position: absolute;
+  left: $spacing-md;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $neutral-400;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.fs-search-input {
+  width: 100%;
+  padding: $spacing-sm $spacing-md $spacing-sm calc(#{$spacing-md} * 2.8);
+  border: 2px solid $neutral-200;
+  border-radius: $radius-lg;
+  font-size: $font-size-base;
+  font-family: $font-family;
+  color: $neutral-900;
+  background: $white;
+  transition: border-color $transition-base, box-shadow $transition-base;
+
+  &::placeholder { color: $neutral-400; }
+
+  &:focus {
+    outline: none;
+    border-color: $primary-500;
+    box-shadow: 0 0 0 3px rgba($primary-500, 0.12);
+  }
+}
+
+.fs-sort-select {
+  padding: $spacing-sm $spacing-xl $spacing-sm $spacing-md;
+  border: 2px solid $neutral-200;
+  border-radius: $radius-lg;
+  font-size: $font-size-sm;
+  font-family: $font-family;
+  color: $neutral-700;
+  background: $white;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right $spacing-sm center;
+  transition: border-color $transition-base;
+
+  &:focus { outline: none; border-color: $primary-500; }
+}
+
+// ── Skill pills ──────────────────────────────────────────────────────────────
+.fs-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-xl;
+}
+
+.fs-pill {
+  padding: 6px $spacing-md;
+  border-radius: $radius-full;
+  border: 1.5px solid $neutral-200;
+  background: $white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $neutral-600;
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover {
+    border-color: $primary-500;
+    color: $primary-500;
+    background: rgba($primary-500, 0.05);
+  }
+
+  &--active {
+    background: $gradient-primary;
+    border-color: transparent;
+    color: $white;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+// ── Loading ──────────────────────────────────────────────────────────────────
+.fs-loading {
+  text-align: center;
+  padding: $spacing-4xl $spacing-lg;
+  color: $neutral-500;
+
+  p { margin-top: $spacing-md; }
+}
+
+// ── Empty state ──────────────────────────────────────────────────────────────
+.fs-empty {
+  text-align: center;
+  padding: $spacing-4xl $spacing-lg;
+  background: $neutral-50;
+  border-radius: $radius-2xl;
+  border: 2px dashed $neutral-200;
+
+  &__icon { font-size: 3.5rem; margin-bottom: $spacing-md; }
+
+  h3 { font-size: $font-size-xl; font-weight: $font-weight-bold; color: $neutral-800; margin: 0 0 $spacing-xs; }
+  p  { color: $neutral-500; margin: 0 0 $spacing-lg; }
+}
+
+// ── Grid ─────────────────────────────────────────────────────────────────────
+.fs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-lg;
+
+  @include breakpoint(sm) { grid-template-columns: repeat(2, 1fr); }
+  @include breakpoint(lg) { grid-template-columns: repeat(3, 1fr); }
+  @include breakpoint(xl) { grid-template-columns: repeat(4, 1fr); }
+}
+
+// ── Card ─────────────────────────────────────────────────────────────────────
+.fs-card {
+  background: $white;
+  border: 1.5px solid $neutral-200;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  cursor: pointer;
+  transition: all $transition-base;
+  box-shadow: $shadow-xs;
+
+  &:hover {
+    border-color: $primary-500;
+    box-shadow: $shadow-md;
+    transform: translateY(-3px);
+  }
+
+  &__avatar-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  &__avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+
+    &--img { object-fit: cover; }
+
+    &--initials {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: $white;
+      font-size: $font-size-xl;
+      font-weight: $font-weight-extrabold;
+    }
+  }
+
+  &__body { flex: 1; text-align: center; }
+
+  &__name {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $neutral-900;
+    margin: 0 0 4px;
+  }
+
+  &__title {
+    font-size: $font-size-sm;
+    color: $neutral-500;
+    margin: 0 0 $spacing-sm;
+  }
+
+  &__rating {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__rating-val {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    color: $neutral-800;
+  }
+
+  &__reviews {
+    font-size: 11px;
+    color: $neutral-400;
+  }
+
+  &__skills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  &__footer {
+    text-align: center;
+    border-top: 1px solid $neutral-100;
+    padding-top: $spacing-md;
+    margin-top: auto;
+  }
+}
+
+// ── Stars ────────────────────────────────────────────────────────────────────
+.fs-stars   { display: inline-flex; gap: 1px; }
+.fs-star    { color: $neutral-200; font-size: .9rem; &--filled { color: $warning-500; } }
+
+// ── Skill tags ───────────────────────────────────────────────────────────────
+.fs-skill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: $radius-full;
+  font-size: 11px;
+  font-weight: $font-weight-semibold;
+  background: $neutral-100;
+  color: $neutral-700;
+  border: 1px solid $neutral-200;
+  flex-wrap: wrap;
+
+  &--verified {
+    background: rgba($success-500, 0.08);
+    color: $success-700;
+    border-color: rgba($success-500, 0.25);
+  }
+}
+
+.fs-skill-badge {
+  font-size: 10px;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-full;
+  padding: 1px 6px;
+
+  &--verified {
+    background: $success-100;
+    color: $success-700;
+  }
+
+  &--unverified {
+    background: $neutral-100;
+    color: $neutral-500;
+  }
+}
+
+// ── Portfolio button ─────────────────────────────────────────────────────────
+.fs-btn-portfolio {
+  display: inline-block;
+  padding: $spacing-sm $spacing-lg;
+  border-radius: $radius-lg;
+  background: $gradient-primary;
+  color: $white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  border: none;
+  cursor: pointer;
+  transition: all $transition-base;
+  box-shadow: $shadow-primary;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: $shadow-primary-lg;
+  }
+}

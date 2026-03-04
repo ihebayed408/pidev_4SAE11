@@ -1,0 +1,297 @@
+<!-- ── Loading ──────────────────────────────────────────────────────────────── -->
+@if (isLoading) {
+  <div class="dfp-loading">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-3 text-muted">Loading profile…</p>
+  </div>
+}
+
+<!-- ── Not found ────────────────────────────────────────────────────────────── -->
+@if (!isLoading && notFound) {
+  <div class="dfp-not-found">
+    <div class="dfp-not-found__icon">😕</div>
+    <h2>Freelancer Not Found</h2>
+    <p class="text-muted">This profile doesn't exist or was removed.</p>
+    <button class="btn btn-primary mt-3" (click)="goBack()">← Back to Search</button>
+  </div>
+}
+
+<!-- ── Profile ───────────────────────────────────────────────────────────────── -->
+@if (!isLoading && profile) {
+  <div class="dfp-wrap">
+
+    <!-- ── 1. HERO ──────────────────────────────────────────────────────────── -->
+    <div class="dfp-hero">
+      <!-- Back button -->
+      <button class="dfp-back" (click)="goBack()">← Back to Search</button>
+
+      <div class="dfp-hero__body">
+
+        <!-- Avatar -->
+        <div class="dfp-hero__avatar-col">
+          @if (profile.avatarUrl) {
+            <img [src]="profile.avatarUrl" [alt]="profile.firstName" class="dfp-avatar dfp-avatar--img" />
+          } @else {
+            <div class="dfp-avatar dfp-avatar--initials" [style.background]="avatarGradient(profile.userId)">
+              {{ initials(profile) }}
+            </div>
+          }
+        </div>
+
+        <!-- Identity -->
+        <div class="dfp-hero__identity">
+          <h1 class="dfp-hero__name">{{ profile.firstName }} {{ profile.lastName }}</h1>
+          <p class="dfp-hero__title">{{ profile.title }}</p>
+
+          <div class="dfp-hero__meta">
+            <span>📍 {{ profile.location }}</span>
+            <span>📅 Member since {{ profile.memberSince }}</span>
+            <span class="dfp-rate">${{ profile.hourlyRate }}/hr</span>
+          </div>
+
+          <!-- Stars -->
+          <div class="dfp-stars mt-2">
+            @for (s of stars(); track s) {
+              <span class="dfp-star" [class.dfp-star--filled]="isFilled(s, profile.rating)">★</span>
+            }
+            <span class="dfp-rating-val">{{ profile.rating.toFixed(1) }}</span>
+            <span class="dfp-reviews">({{ profile.totalReviews }} reviews)</span>
+          </div>
+
+          <!-- Hero CTAs -->
+          <div class="dfp-hero__ctas">
+            <button class="btn btn-light fw-bold px-4" (click)="hireFreelancer(profile)">💼 Hire Me</button>
+            <button class="btn dfp-btn-ghost px-4">✉️ Message</button>
+            @if (isOwner) {
+              <span class="badge bg-warning text-dark ms-3">Your Profile</span>
+            }
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="dfp-hero__stats">
+          <div class="dfp-stat">
+            <span class="dfp-stat__val">{{ profile.projectsCompleted }}</span>
+            <span class="dfp-stat__lbl">Projects</span>
+          </div>
+          <div class="dfp-stat">
+            <span class="dfp-stat__val">{{ profile.responseRate }}%</span>
+            <span class="dfp-stat__lbl">Response</span>
+          </div>
+          <div class="dfp-stat">
+            <span class="dfp-stat__val">{{ profile.yearsExperience }}y</span>
+            <span class="dfp-stat__lbl">Experience</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Body ────────────────────────────────────────────────────────────── -->
+    <div class="dfp-body">
+
+      <!-- ── 2. EXPERIENCE & SKILLS ──────────────────────────────────────── -->
+      <section class="dfp-section">
+        <div class="dfp-section__head">
+          <div class="dfp-section__bar"></div>
+          <h2 class="dfp-section__title">About &amp; Experience</h2>
+        </div>
+
+        <p class="dfp-bio">{{ profile.bio }}</p>
+
+        <!-- Work history timeline -->
+        @if (profile.experiences.length > 0) {
+          <h4 class="dfp-sub-title">Work History</h4>
+          <div class="dfp-timeline">
+            @for (exp of profile.experiences; track exp.role; let last = $last) {
+              <div class="dfp-timeline__item">
+                <div class="dfp-timeline__dot"></div>
+                @if (!last) { <div class="dfp-timeline__line"></div> }
+                <div class="dfp-timeline__content">
+                  <p class="dfp-tl-role">{{ exp.role }}</p>
+                  <p class="dfp-tl-company">{{ exp.company }} · {{ exp.duration }}</p>
+                  <p class="dfp-tl-desc">{{ exp.description }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Skills by category -->
+        <h4 class="dfp-sub-title mt-4">Skills &amp; Expertise</h4>
+        @for (group of skillsByCategory(profile.skills); track group.cat) {
+          <div class="dfp-skill-group">
+            <span class="dfp-skill-category">{{ group.cat }}</span>
+            <div class="dfp-skill-list">
+              @for (sk of group.items; track sk.name) {
+                <div class="dfp-skill-row">
+                  <span class="dfp-skill-name">{{ sk.name }}</span>
+                  <div class="dfp-skill-bar-wrap">
+                    <div
+                      class="dfp-skill-bar"
+                      [style.width]="levelWidth(sk.level)"
+                      [style.background]="levelColor(sk.level)"
+                    ></div>
+                  </div>
+                  <div class="dfp-skill-badges">
+                    <span
+                      class="dfp-skill-level badge"
+                      [class.bg-warning]="sk.level === 'Expert'"
+                      [class.bg-info]="sk.level === 'Intermediate'"
+                      [class.bg-secondary]="sk.level === 'Beginner'"
+                      [class.text-dark]="sk.level !== 'Beginner'"
+                    >{{ sk.level }}</span>
+                    @if (sk.verified) {
+                      <span class="dfp-badge-verified">✓ Verified</span>
+                    } @else {
+                      <span class="dfp-badge-unverified">Unverified</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </section>
+
+      <!-- ── 3. RECENT PROJECTS ──────────────────────────────────────────── -->
+      <section class="dfp-section">
+        <div class="dfp-section__head">
+          <div class="dfp-section__bar" style="background: linear-gradient(#43e97b, #38f9d7)"></div>
+          <h2 class="dfp-section__title">Recent Projects</h2>
+        </div>
+
+        <div class="row g-4">
+          @for (proj of profile.recentProjects; track proj.id) {
+            <div class="col-12 col-sm-6 col-lg-4">
+              <div class="dfp-proj-card">
+                <div class="dfp-proj-card__thumb">
+                  <img
+                    [src]="proj.thumbnail"
+                    [alt]="proj.title"
+                    class="dfp-proj-thumb"
+                    (error)="$any($event.target).src='https://picsum.photos/seed/fallback/600/400'"
+                  />
+                  <div class="dfp-proj-card__rating">
+                    <span class="text-warning">★</span> {{ proj.rating.toFixed(1) }}
+                  </div>
+                </div>
+                <div class="dfp-proj-card__body">
+                  <h5 class="dfp-proj-card__title">{{ proj.title }}</h5>
+                  <div class="dfp-proj-card__meta">
+                    <span>👤 {{ proj.clientName }}</span>
+                    <span>📅 {{ proj.completionDate }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- ── 4. TESTIMONIALS ────────────────────────────────────────────── -->
+      <section class="dfp-section">
+        <div class="dfp-section__head">
+          <div class="dfp-section__bar" style="background: linear-gradient(#f093fb, #f5576c)"></div>
+          <h2 class="dfp-section__title">Client Testimonials</h2>
+        </div>
+
+        <div class="row g-4">
+          @for (t of profile.testimonials; track t.clientName) {
+            <div class="col-12 col-md-6">
+              <blockquote class="dfp-testimonial">
+                <div class="dfp-testimonial__header">
+                  <div class="dfp-t-avatar" [style.background]="avatarGradient(t.clientInitials.charCodeAt(0))">
+                    {{ t.clientInitials }}
+                  </div>
+                  <div>
+                    <p class="dfp-t-name">{{ t.clientName }}</p>
+                    <p class="dfp-t-project">re: {{ t.projectName }}</p>
+                  </div>
+                  <div class="dfp-t-stars ms-auto">
+                    @for (s of stars(); track s) {
+                      <span [class.text-warning]="isFilled(s, t.rating)" [class.text-muted]="!isFilled(s, t.rating)">★</span>
+                    }
+                  </div>
+                </div>
+                <p class="dfp-t-review">"{{ t.review }}"</p>
+              </blockquote>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- ── 5. ENGAGEMENT METRICS (owner only) ────────────────────────── -->
+      @if (isOwner) {
+        <section class="dfp-section dfp-metrics">
+          <div class="dfp-section__head">
+            <div class="dfp-section__bar" style="background: linear-gradient(#667eea, #764ba2)"></div>
+            <h2 class="dfp-section__title">Portfolio Analytics</h2>
+            <span class="badge bg-warning text-dark ms-3">Owner View</span>
+          </div>
+
+          <!-- Stat cards -->
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+              <div class="dfp-stat-card">
+                <p class="dfp-stat-card__label">Total Visits</p>
+                <p class="dfp-stat-card__val">{{ formatNum(profile.metrics.totalVisits) }}</p>
+                <p class="dfp-stat-card__sub">All time</p>
+              </div>
+            </div>
+            <div class="col-6 col-lg-3">
+              <div class="dfp-stat-card">
+                <p class="dfp-stat-card__label">Unique Visitors</p>
+                <p class="dfp-stat-card__val">{{ formatNum(profile.metrics.uniqueVisits) }}</p>
+                <p class="dfp-stat-card__sub">All time</p>
+              </div>
+            </div>
+            <div class="col-6 col-lg-3">
+              <div class="dfp-stat-card dfp-stat-card--highlight">
+                <p class="dfp-stat-card__label">This Week</p>
+                <p class="dfp-stat-card__val">{{ formatNum(profile.metrics.thisWeekVisits) }}</p>
+                <p
+                  class="dfp-stat-card__change"
+                  [class.dfp-change--up]="weekChange(profile).up"
+                  [class.dfp-change--down]="!weekChange(profile).up"
+                >
+                  {{ weekChange(profile).up ? '▲' : '▼' }}
+                  {{ weekChange(profile).pct }}%
+                  <span class="dfp-change-sub">vs last week ({{ formatNum(profile.metrics.lastWeekVisits) }})</span>
+                </p>
+              </div>
+            </div>
+            <div class="col-6 col-lg-3">
+              <div class="dfp-stat-card">
+                <p class="dfp-stat-card__label">Hire Rate</p>
+                <p class="dfp-stat-card__val">5.2%</p>
+                <p class="dfp-stat-card__sub">Visits → Hires</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Line chart -->
+          <div class="dfp-chart-card">
+            <p class="dfp-chart-card__title">Daily Visits — Last 30 Days</p>
+            <div class="dfp-chart-wrap">
+              <canvas #visitChartCanvas></canvas>
+            </div>
+          </div>
+        </section>
+      }
+
+    </div><!-- /dfp-body -->
+
+    <!-- ── Hire CTA ──────────────────────────────────────────────────────── -->
+    <div class="dfp-cta-banner">
+      <div class="container text-center">
+        <h3 class="dfp-cta-banner__title">Ready to work with {{ profile.firstName }}?</h3>
+        <p class="dfp-cta-banner__sub">Post a project brief or send a direct message to get started.</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+          <button class="btn btn-light fw-bold px-5 py-2" (click)="hireFreelancer(profile)">💼 Post a Project</button>
+          <button class="btn dfp-btn-ghost px-5 py-2">✉️ Send Message</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /dfp-wrap -->
+}

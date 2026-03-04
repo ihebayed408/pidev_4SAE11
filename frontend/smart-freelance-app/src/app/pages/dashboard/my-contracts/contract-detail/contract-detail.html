@@ -49,6 +49,9 @@
 
     <!-- ── ACTION BAR ──────────────────────────────────────────── -->
     <div class="action-bar">
+      <button class="btn-secondary btn-export-pdf" (click)="exportPdf()" [disabled]="isExportingPdf">
+        @if (isExportingPdf) { ⏳ Exporting… } @else { 📄 Export as PDF }
+      </button>
       @if (canEdit) {
         <button class="btn-secondary" (click)="openEdit()">✏️ Edit</button>
       }
@@ -167,6 +170,8 @@
                     @if (cf.resolution) {
                       <div class="conflict-resolution"><strong>Resolution:</strong> {{ cf.resolution }}</div>
                     }
+                    <!-- Comments -->
+                    <ng-container *ngTemplateOutlet="commentBlock; context: { cf: cf }"></ng-container>
                   </div>
                 }
               </div>
@@ -194,6 +199,8 @@
                     @if (cf.resolution) {
                       <div class="conflict-resolution"><strong>Resolution:</strong> {{ cf.resolution }}</div>
                     }
+                    <!-- Comments -->
+                    <ng-container *ngTemplateOutlet="commentBlock; context: { cf: cf }"></ng-container>
                   </div>
                 }
               </div>
@@ -264,6 +271,71 @@
     </div>
   }
 </div>
+
+<!-- ══════════════ COMMENTS TEMPLATE ════════════════════════ -->
+<ng-template #commentBlock let-cf="cf">
+  <div class="conflict-comments">
+    <p class="comments-title">💬 Discussion ({{ commentsFor(cf.id).length }})</p>
+
+    @for (cm of commentsFor(cf.id); track cm.id) {
+      <div class="comment-item" [class.own-comment]="cm.userId === auth.getUserId()">
+        <div class="comment-header">
+          <span class="comment-author">
+            {{ cm.userId === contract?.clientId ? '👤 Client' : cm.userId === contract?.freelancerId ? '💻 Freelancer' : 'User #' + cm.userId }}
+          </span>
+          <span class="comment-time">{{ formatDate(cm.createdAt) }}</span>
+          @if (cm.userId === auth.getUserId()) {
+            <button class="btn-comment-action" (click)="startEditComment(cm)">Edit</button>
+            <button class="btn-comment-action btn-comment-delete" (click)="deleteComment(cm)">Delete</button>
+          }
+        </div>
+        @if (editingCommentId === cm.id) {
+          <div class="comment-edit-form">
+            <textarea [(ngModel)]="editCommentText" rows="2" class="comment-textarea"></textarea>
+            <div class="comment-edit-actions">
+              <button class="btn-comment-save" (click)="saveEditComment(cm)">Save</button>
+              <button class="btn-comment-cancel" (click)="cancelEditComment()">Cancel</button>
+            </div>
+          </div>
+        } @else {
+          <p class="comment-body">{{ cm.content }}</p>
+        }
+      </div>
+    }
+
+    @if (commentsFor(cf.id).length === 0) {
+      <p class="comments-empty">No messages yet. Be the first to write.</p>
+    }
+
+    @if (cf.status !== 'RESOLVED') {
+      <div class="comment-input-row">
+        <textarea [(ngModel)]="newCommentText[cf.id]" rows="2" class="comment-textarea"
+                  [placeholder]="isTranscribing[cf.id] ? 'Transcribing…' : 'Write a message…'"></textarea>
+        <div class="comment-actions-row">
+          <!-- Mic button -->
+          @if (!isRecording[cf.id] && !isTranscribing[cf.id]) {
+            <button class="btn-mic" (click)="startRecording(cf.id)" title="Record voice message">
+              🎤
+            </button>
+          }
+          @if (isRecording[cf.id]) {
+            <button class="btn-mic btn-mic--recording" (click)="stopRecording(cf.id)" title="Stop recording">
+              ⏹
+            </button>
+          }
+          @if (isTranscribing[cf.id]) {
+            <span class="transcribing-indicator">Converting…</span>
+          }
+          <!-- Send button -->
+          <button class="btn-post-comment" (click)="postComment(cf.id)"
+                  [disabled]="postingComment[cf.id] || isRecording[cf.id] || isTranscribing[cf.id] || !newCommentText[cf.id]?.trim()">
+            {{ postingComment[cf.id] ? 'Sending…' : 'Send' }}
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</ng-template>
 
 <!-- ══════════════ EDIT / PROPOSE CHANGES MODAL ══════════════ -->
 @if (showEditForm) {
