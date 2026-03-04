@@ -55,15 +55,25 @@ export class NotificationService {
   /**
    * Returns the dashboard route + query params for a notification.
    * TASK_STATUS_UPDATE → project-tasks?projectId=X (client sees task board).
+   * REVIEW_RESPONSE → reviews/about-me (reviewee sees new response to their review).
    * PROGRESS_UPDATE / PROGRESS_COMMENT → track-progress or progress-updates?projectId=X.
    */
-  getNotificationRoute(n: NotificationItem, isClient: boolean): { route: string; queryParams: { projectId?: string } } {
+  getNotificationRoute(
+    n: NotificationItem,
+    isClient: boolean
+  ): { route: string; queryParams: { projectId?: string; reviewId?: string } } {
     const projectId = n.data?.['projectId'];
+    const reviewId = n.data?.['reviewId'];
     const type = n.type ?? '';
 
     if (type === 'TASK_STATUS_UPDATE') {
       const route = '/dashboard/project-tasks';
       return projectId ? { route, queryParams: { projectId } } : { route, queryParams: {} };
+    }
+
+    if (type === 'REVIEW_RESPONSE') {
+      const route = '/dashboard/reviews/about-me';
+      return reviewId ? { route, queryParams: { reviewId } } : { route, queryParams: {} };
     }
 
     const base = isClient ? '/dashboard/track-progress' : '/dashboard/progress-updates';

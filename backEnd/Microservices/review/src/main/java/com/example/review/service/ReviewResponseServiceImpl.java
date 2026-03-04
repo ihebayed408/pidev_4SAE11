@@ -17,6 +17,7 @@ public class ReviewResponseServiceImpl implements ReviewResponseService {
     
     private final ReviewResponseRepository reviewResponseRepository;
     private final ReviewRepository reviewRepository;
+    private final ReviewNotificationService reviewNotificationService;
     
     @Override
     public ReviewResponse createResponse(ReviewResponse reviewResponse) {
@@ -28,7 +29,9 @@ public class ReviewResponseServiceImpl implements ReviewResponseService {
                             "Review not found with id: " + reviewResponse.getReviewId()));
             reviewResponse.setReview(review);
         }
-        return reviewResponseRepository.save(reviewResponse);
+        ReviewResponse saved = reviewResponseRepository.save(reviewResponse);
+        reviewNotificationService.notifyReviewResponseReceived(saved);
+        return saved;
     }
     
     @Override

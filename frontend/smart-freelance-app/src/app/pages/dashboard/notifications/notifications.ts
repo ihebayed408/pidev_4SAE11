@@ -116,6 +116,8 @@ export class Notifications implements OnInit {
   typeLabel(type: string): string {
     if (type === 'PROGRESS_UPDATE') return 'Progress update';
     if (type === 'PROGRESS_COMMENT') return 'Comment';
+    if (type === 'REVIEW_RESPONSE') return 'Review response';
+    if (type === 'TASK_STATUS_UPDATE') return 'Task update';
     return type || 'Notification';
   }
 }
