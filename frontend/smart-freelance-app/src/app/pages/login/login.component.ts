@@ -72,7 +72,11 @@ export class LoginComponent {
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err?.error?.error ?? err?.message ?? 'Login failed. Please try again.';
+        const body = err?.error;
+        this.errorMessage =
+          (typeof body === 'object' && body?.error ? body.error : typeof body === 'string' ? body : null)
+          ?? err?.message
+          ?? 'Login failed. Please try again.';
       },
     });
   }
