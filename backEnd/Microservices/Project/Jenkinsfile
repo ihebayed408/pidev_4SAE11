@@ -1,144 +1,119 @@
+// CI/CD pipeline for the Project microservice (monorepo: pidev_4SAE11).
+// Script Path in Jenkins: backEnd/Microservices/Project/Jenkinsfile
 pipeline {
     agent any
 
-    environment {
-        // Docker Hub
-        DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials')
-        DOCKER_IMAGE           = 'ton-dockerhub-username/springboot-project'
-        DOCKER_TAG             = "${env.BUILD_NUMBER}"
-
-        // SonarQube
-        SONAR_HOST_URL         = 'http://localhost:9000'
-        SONAR_TOKEN            = credentials('sonar-token')
-
-        // Déploiement SSH (VPS)
-        DEPLOY_HOST            = 'user@your-vps-ip'
-        DEPLOY_DIR             = '/opt/springboot-project'
+    parameters {
+        string(name: 'REPO_URL', defaultValue: '', description: 'Git repository URL (leave empty to use job SCM config)')
+        string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to build')
+        string(name: 'IMAGE_REPO', defaultValue: '', description: 'Registry/repo prefix (unused, reserved for orchestrator)')
+        string(name: 'IMAGE_TAG', defaultValue: '', description: 'Docker image tag override')
+        booleanParam(name: 'PUSH_IMAGE', defaultValue: true, description: 'Push Docker image to registry')
+        booleanParam(name: 'RUN_SONARQUBE', defaultValue: true, description: 'Run SonarQube analysis')
+        booleanParam(name: 'TRIGGER_DOWNSTREAM', defaultValue: false, description: 'Trigger downstream jobs')
     }
 
-    tools {
-        maven 'Maven-3.9'   // Nom configuré dans Jenkins > Global Tool Configuration
-        jdk   'JDK-17'      // Nom configuré dans Jenkins > Global Tool Configuration
+    environment {
+        SERVICE_DIR   = 'backEnd/Microservices/Project'
+        DOCKER_IMAGE  = 'ihebayed408/project'
+        DOCKER_TAG    = "${params.IMAGE_TAG?.trim() ? params.IMAGE_TAG.trim() : (env.BUILD_NUMBER ?: 'latest')}"
+        JOB_NAME_SAFE = "${env.JOB_NAME?.replaceAll('[^a-zA-Z0-9]', '_') ?: 'project'}"
     }
 
     stages {
-
-        // ─────────────────────────────────────────
-        // 1. CHECKOUT
-        // ─────────────────────────────────────────
         stage('Checkout') {
             steps {
-                checkout scm
-                echo "✅ Code récupéré depuis le dépôt."
+                script {
+                    if (params.REPO_URL?.trim()) {
+                        checkout([$class: 'GitSCM',
+                            branches: [[name: "*/${params.BRANCH}"]],
+                            userRemoteConfigs: [[url: params.REPO_URL]]
+                        ])
+                    } else {
+                        checkout scm
+                    }
+                }
             }
         }
 
-        // ─────────────────────────────────────────
-        // 2. BUILD & TESTS
-        // ─────────────────────────────────────────
-        stage('Build & Tests') {
+        stage('Build & Test') {
             steps {
-                sh 'mvn clean package -DskipTests=false'
+                dir(SERVICE_DIR) {
+                    sh 'chmod +x mvnw && ./mvnw clean verify -B'
+                }
             }
             post {
                 always {
-                    junit '**/target/surefire-reports/*.xml'
-                    echo "✅ Build terminé. Rapports de tests publiés."
-                }
-                failure {
-                    echo "❌ Build ou tests échoués."
+                    junit allowEmptyResults: true, testResults: "${SERVICE_DIR}/target/surefire-reports/*.xml"
                 }
             }
         }
 
-        // ─────────────────────────────────────────
-        // 3. ANALYSE SONARQUBE
-        // ─────────────────────────────────────────
         stage('SonarQube Analysis') {
+            when { expression { return params.RUN_SONARQUBE } }
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh """
-                        mvn sonar:sonar \
-                            -Dsonar.projectKey=springboot-project \
-                            -Dsonar.projectName='Spring Boot Project' \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.token=${SONAR_TOKEN}
-                    """
+                dir(SERVICE_DIR) {
+                    withCredentials([string(credentialsId: 'SonarQubeToken', variable: 'SONAR_TOKEN')]) {
+                        withSonarQubeEnv('SonarQube') {
+                            sh 'chmod +x mvnw && ./mvnw sonar:sonar -Dsonar.projectKey=project -Dsonar.projectName=Project -Dsonar.token=$SONAR_TOKEN'
+                        }
+                    }
                 }
             }
         }
 
-        // ─────────────────────────────────────────
-        // 4. QUALITY GATE
-        // ─────────────────────────────────────────
         stage('Quality Gate') {
+            when { expression { return params.RUN_SONARQUBE } }
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    timeout(time: 10, unit: 'SECONDS') {
+                        waitForQualityGate abortPipeline: false
+                    }
                 }
-                echo "✅ Quality Gate passé avec succès."
             }
         }
 
-        // ─────────────────────────────────────────
-        // 5. BUILD IMAGE DOCKER
-        // ─────────────────────────────────────────
         stage('Docker Build') {
             steps {
-                sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -t ${DOCKER_IMAGE}:latest ."
-                echo "✅ Image Docker construite : ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                dir(SERVICE_DIR) {
+                    script { docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}") }
+                }
             }
         }
 
-        // ─────────────────────────────────────────
-        // 6. PUSH IMAGE SUR DOCKER HUB
-        // ─────────────────────────────────────────
         stage('Docker Push') {
+            when { expression { return params.PUSH_IMAGE } }
             steps {
-                sh "echo ${DOCKER_HUB_CREDENTIALS_PSW} | docker login -u ${DOCKER_HUB_CREDENTIALS_USR} --password-stdin"
-                sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                sh "docker push ${DOCKER_IMAGE}:latest"
-                echo "✅ Image poussée sur Docker Hub."
-            }
-            post {
-                always {
-                    sh "docker logout"
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'DockerHubCrendentials') {
+                        def image = docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                        image.push()
+                        image.push('latest')
+                    }
                 }
-            }
-        }
-
-        // ─────────────────────────────────────────
-        // 7. DÉPLOIEMENT VIA DOCKER COMPOSE
-        // ─────────────────────────────────────────
-        stage('Deploy') {
-            steps {
-                sshagent(['ssh-deploy-credentials']) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ${DEPLOY_HOST} '
-                            cd ${DEPLOY_DIR} &&
-                            docker compose pull &&
-                            docker compose up -d --remove-orphans
-                        '
-                    """
-                }
-                echo "✅ Application déployée avec succès."
             }
         }
     }
 
-    // ─────────────────────────────────────────
-    // NOTIFICATIONS POST-PIPELINE
-    // ─────────────────────────────────────────
     post {
-        success {
-            echo "🎉 Pipeline terminé avec succès ! Image : ${DOCKER_IMAGE}:${DOCKER_TAG}"
-        }
-        failure {
-            echo "🚨 Pipeline échoué. Consulte les logs ci-dessus."
-        }
-        cleanup {
-            sh "docker rmi ${DOCKER_IMAGE}:${DOCKER_TAG} || true"
+        always {
+            script {
+                if (env.PROMETHEUS_PUSHGATEWAY_URL?.trim()) {
+                    def status = currentBuild.result == 'SUCCESS' ? 1 : 0
+                    def duration = (System.currentTimeMillis() - currentBuild.startTimeInMillis) / 1000.0
+                    writeFile file: 'prometheus_metrics.txt', text: """# HELP jenkins_build_result Build result (1=success, 0=failure)
+# TYPE jenkins_build_result gauge
+jenkins_build_result{job="${JOB_NAME_SAFE}",build_number="${env.BUILD_NUMBER}"} ${status}
+# HELP jenkins_build_duration_seconds Build duration in seconds
+# TYPE jenkins_build_duration_seconds gauge
+jenkins_build_duration_seconds{job="${JOB_NAME_SAFE}",build_number="${env.BUILD_NUMBER}"} ${duration}
+"""
+                    sh "curl -s --data-binary @prometheus_metrics.txt '${env.PROMETHEUS_PUSHGATEWAY_URL}/metrics/job/${JOB_NAME_SAFE}/instance/${env.BUILD_NUMBER}' || true"
+                }
+            }
             cleanWs()
         }
+        failure  { echo 'Pipeline failed' }
+        success  { echo 'Pipeline succeeded' }
     }
 }

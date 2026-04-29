@@ -6,9 +6,9 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: "25", artifactNumToKeepStr: "10"))
     }
     parameters {
-        string(name: "REPO_URL", defaultValue: "https://github.com/YOUR_ORG/YOUR_REPO.git", description: "Git repository URL")
+        string(name: "REPO_URL", defaultValue: "https://github.com/ihebayed408/pidev_4SAE11.git", description: "Git repository URL")
         string(name: "BRANCH", defaultValue: "main", description: "Branch to build")
-        string(name: "IMAGE_REPO", defaultValue: "docker.io/YOUR_DOCKERHUB_USERNAME", description: "Registry/repo prefix")
+        string(name: "IMAGE_REPO", defaultValue: "docker.io/ihebayed408", description: "Registry/repo prefix")
         string(name: "IMAGE_TAG", defaultValue: "", description: "Optional tag override")
         booleanParam(name: "PUSH_IMAGE", defaultValue: true, description: "Push images to Docker Hub")
         booleanParam(name: "RUN_SONARQUBE", defaultValue: true, description: "Run SonarQube analysis in child jobs")

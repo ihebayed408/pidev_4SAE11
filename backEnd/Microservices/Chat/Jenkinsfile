@@ -3,16 +3,37 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'REPO_URL', defaultValue: '', description: 'Git repository URL (leave empty to use job SCM config)')
+        string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to build')
+        string(name: 'IMAGE_REPO', defaultValue: '', description: 'Registry/repo prefix (unused, reserved for orchestrator)')
+        string(name: 'IMAGE_TAG', defaultValue: '', description: 'Docker image tag override')
+        booleanParam(name: 'PUSH_IMAGE', defaultValue: true, description: 'Push Docker image to registry')
+        booleanParam(name: 'RUN_SONARQUBE', defaultValue: true, description: 'Run SonarQube analysis')
+        booleanParam(name: 'TRIGGER_DOWNSTREAM', defaultValue: false, description: 'Trigger downstream jobs')
+    }
+
     environment {
         SERVICE_DIR   = 'backEnd/Microservices/Chat'
-        DOCKER_IMAGE  = 'ridhaferchichi/chat'
-        DOCKER_TAG    = "${env.BUILD_NUMBER ?: 'latest'}"
+        DOCKER_IMAGE  = 'ihebayed408/chat'
+        DOCKER_TAG    = "${params.IMAGE_TAG?.trim() ? params.IMAGE_TAG.trim() : (env.BUILD_NUMBER ?: 'latest')}"
         JOB_NAME_SAFE = "${env.JOB_NAME?.replaceAll('[^a-zA-Z0-9]', '_') ?: 'chat'}"
     }
 
     stages {
         stage('Checkout') {
-            steps { checkout scm }
+            steps {
+                script {
+                    if (params.REPO_URL?.trim()) {
+                        checkout([$class: 'GitSCM',
+                            branches: [[name: "*/${params.BRANCH}"]],
+                            userRemoteConfigs: [[url: params.REPO_URL]]
+                        ])
+                    } else {
+                        checkout scm
+                    }
+                }
+            }
         }
 
         stage('Build & Test') {
@@ -29,6 +50,7 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
+            when { expression { return params.RUN_SONARQUBE } }
             steps {
                 dir(SERVICE_DIR) {
                     withCredentials([string(credentialsId: 'SonarQubeToken', variable: 'SONAR_TOKEN')]) {
@@ -41,6 +63,7 @@ pipeline {
         }
 
         stage('Quality Gate') {
+            when { expression { return params.RUN_SONARQUBE } }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                     timeout(time: 10, unit: 'SECONDS') {
@@ -59,6 +82,7 @@ pipeline {
         }
 
         stage('Docker Push') {
+            when { expression { return params.PUSH_IMAGE } }
             steps {
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', 'DockerHubCrendentials') {

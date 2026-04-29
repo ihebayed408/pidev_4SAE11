@@ -1,4 +1,4 @@
-def repoUrl = 'https://github.com/RidhaFerchichi404/pidev_4SAE11.git'
+def repoUrl = 'https://github.com/ihebayed408/pidev_4SAE11.git'
 def branchSpec = '*/main'
 
 def services = [
@@ -44,7 +44,7 @@ services.each { svc ->
     parameters {
       stringParam('REPO_URL', repoUrl, 'Git repository URL')
       stringParam('BRANCH', 'main', 'Git branch to build')
-      stringParam('IMAGE_REPO', 'docker.io/ridhaferchichi', 'Registry/repo prefix')
+      stringParam('IMAGE_REPO', 'docker.io/ihebayed408', 'Registry/repo prefix')
       stringParam('IMAGE_TAG', '', 'Leave empty to use build number')
       booleanParam('PUSH_IMAGE', true, 'Push built image')
       booleanParam('RUN_SONARQUBE', true, 'Run SonarQube analysis and quality gate')
@@ -78,7 +78,7 @@ pipelineJob('orchestration/full-stack-main') {
   parameters {
     stringParam('REPO_URL', repoUrl, 'Git repository URL')
     stringParam('BRANCH', 'main', 'Git branch to build')
-    stringParam('IMAGE_REPO', 'docker.io/ridhaferchichi', 'Registry/repo prefix')
+    stringParam('IMAGE_REPO', 'docker.io/ihebayed408', 'Registry/repo prefix')
     stringParam('IMAGE_TAG', '', 'Leave empty to use build number')
     booleanParam('PUSH_IMAGE', true, 'Push all images')
     booleanParam('RUN_SONARQUBE', true, 'Run SonarQube analysis and quality gate')

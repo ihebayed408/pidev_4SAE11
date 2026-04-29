@@ -182,7 +182,7 @@ Go to **Manage Jenkins > Credentials > System > Global credentials > Add Credent
 |-------|-------|
 | Kind | Username with password |
 | ID | `DockerHubCrendentials` |
-| Username | `ridhaferchichi` (your Docker Hub username) |
+| Username | `ihebayed408` (your Docker Hub username) |
 | Password | Docker Hub password or access token |
 
 ### C. SonarQube token
@@ -225,7 +225,7 @@ The seed job reads `Jenkins/jobs.groovy` and auto-generates all 21 pipeline jobs
 1. **New Item** > name: `seed-job` > type: **Freestyle project** > OK
 
 2. **Source Code Management** > Git:
-   - Repository URL: `https://github.com/RidhaFerchichi404/pidev_4SAE11.git`
+   - Repository URL: `https://github.com/ihebayed408/pidev_4SAE11.git`
    - Credentials: `GithubCredentials`
    - Branch: `*/main`
 
@@ -301,7 +301,7 @@ The `orchestration/full-stack-main` job runs all services respecting dependencie
 |-----------|---------|-------------|
 | `REPO_URL` | GitHub repo URL | Git repository |
 | `BRANCH` | `main` | Branch to build |
-| `IMAGE_REPO` | `docker.io/ridhaferchichi` | Docker registry prefix |
+| `IMAGE_REPO` | `docker.io/ihebayed408` | Docker registry prefix |
 | `IMAGE_TAG` | (build number) | Image tag override |
 | `PUSH_IMAGE` | `true` | Push to Docker Hub |
 | `RUN_SONARQUBE` | `true` | Run SonarQube analysis |
@@ -342,27 +342,27 @@ This builds all 21 services in the correct dependency order.
 
 | Job Name | Jenkinsfile Path | Docker Image | SonarQube Key |
 |----------|-----------------|--------------|---------------|
-| `services/eureka` | `backEnd/Eureka/Jenkinsfile` | `ridhaferchichi/eureka` | `eureka` |
-| `services/config-server` | `backEnd/ConfigServer/Jenkinsfile` | `ridhaferchichi/config-server` | `config-server` |
-| `services/api-gateway` | `backEnd/apiGateway/Jenkinsfile` | `ridhaferchichi/api-gateway` | `api-gateway` |
-| `services/keycloak-auth` | `backEnd/KeyCloak/Jenkinsfile` | `ridhaferchichi/keycloak-auth` | `keycloak-auth` |
-| `services/user` | `backEnd/Microservices/user/Jenkinsfile` | `ridhaferchichi/user` | `user` |
-| `services/project` | `backEnd/Microservices/Project/Jenkinsfile` | `ridhaferchichi/project` | `project` |
-| `services/offer` | `backEnd/Microservices/Offer/Jenkinsfile` | `ridhaferchichi/offer` | `offer` |
-| `services/contract` | `backEnd/Microservices/Contract/Jenkinsfile` | `ridhaferchichi/contract` | `contract` |
-| `services/portfolio` | `backEnd/Microservices/Portfolio/Jenkinsfile` | `ridhaferchichi/portfolio` | `portfolio` |
-| `services/review` | `backEnd/Microservices/review/Jenkinsfile` | `ridhaferchichi/review` | `review` |
-| `services/planning` | `backEnd/Microservices/planning/Jenkinsfile` | `ridhaferchichi/planning` | `planning` |
-| `services/task` | `backEnd/Microservices/task/Jenkinsfile` | `ridhaferchichi/task` | `task` |
-| `services/notification` | `backEnd/Microservices/Notification/Jenkinsfile` | `ridhaferchichi/notification` | `notification` |
-| `services/gamification` | `backEnd/Microservices/gamification/Jenkinsfile` | `ridhaferchichi/gamification` | `gamification` |
-| `services/chat` | `backEnd/Microservices/Chat/Jenkinsfile` | `ridhaferchichi/chat` | `chat` |
-| `services/meeting` | `backEnd/Microservices/Meeting/Jenkinsfile` | `ridhaferchichi/meeting` | `meeting` |
-| `services/freelancia-job` | `backEnd/Microservices/FreelanciaJob/Jenkinsfile` | `ridhaferchichi/freelancia-job` | `freelancia-job` |
-| `services/ticket-service` | `backEnd/Microservices/ticket-service/Jenkinsfile` | `ridhaferchichi/ticket-service` | `ticket-service` |
-| `services/subcontracting` | `backEnd/Microservices/Subcontracting/Jenkinsfile` | `ridhaferchichi/subcontracting` | `subcontracting` |
-| `services/aimodel` | `backEnd/Microservices/aimodel-node/Jenkinsfile` | `ridhaferchichi/aimodel` | -- (Node.js) |
-| `services/frontend` | `frontend/smart-freelance-app/Jenkinsfile` | `ridhaferchichi/frontend` | -- (Angular) |
+| `services/eureka` | `backEnd/Eureka/Jenkinsfile` | `ihebayed408/eureka` | `eureka` |
+| `services/config-server` | `backEnd/ConfigServer/Jenkinsfile` | `ihebayed408/config-server` | `config-server` |
+| `services/api-gateway` | `backEnd/apiGateway/Jenkinsfile` | `ihebayed408/api-gateway` | `api-gateway` |
+| `services/keycloak-auth` | `backEnd/KeyCloak/Jenkinsfile` | `ihebayed408/keycloak-auth` | `keycloak-auth` |
+| `services/user` | `backEnd/Microservices/user/Jenkinsfile` | `ihebayed408/user` | `user` |
+| `services/project` | `backEnd/Microservices/Project/Jenkinsfile` | `ihebayed408/project` | `project` |
+| `services/offer` | `backEnd/Microservices/Offer/Jenkinsfile` | `ihebayed408/offer` | `offer` |
+| `services/contract` | `backEnd/Microservices/Contract/Jenkinsfile` | `ihebayed408/contract` | `contract` |
+| `services/portfolio` | `backEnd/Microservices/Portfolio/Jenkinsfile` | `ihebayed408/portfolio` | `portfolio` |
+| `services/review` | `backEnd/Microservices/review/Jenkinsfile` | `ihebayed408/review` | `review` |
+| `services/planning` | `backEnd/Microservices/planning/Jenkinsfile` | `ihebayed408/planning` | `planning` |
+| `services/task` | `backEnd/Microservices/task/Jenkinsfile` | `ihebayed408/task` | `task` |
+| `services/notification` | `backEnd/Microservices/Notification/Jenkinsfile` | `ihebayed408/notification` | `notification` |
+| `services/gamification` | `backEnd/Microservices/gamification/Jenkinsfile` | `ihebayed408/gamification` | `gamification` |
+| `services/chat` | `backEnd/Microservices/Chat/Jenkinsfile` | `ihebayed408/chat` | `chat` |
+| `services/meeting` | `backEnd/Microservices/Meeting/Jenkinsfile` | `ihebayed408/meeting` | `meeting` |
+| `services/freelancia-job` | `backEnd/Microservices/FreelanciaJob/Jenkinsfile` | `ihebayed408/freelancia-job` | `freelancia-job` |
+| `services/ticket-service` | `backEnd/Microservices/ticket-service/Jenkinsfile` | `ihebayed408/ticket-service` | `ticket-service` |
+| `services/subcontracting` | `backEnd/Microservices/Subcontracting/Jenkinsfile` | `ihebayed408/subcontracting` | `subcontracting` |
+| `services/aimodel` | `backEnd/Microservices/aimodel-node/Jenkinsfile` | `ihebayed408/aimodel` | -- (Node.js) |
+| `services/frontend` | `frontend/smart-freelance-app/Jenkinsfile` | `ihebayed408/frontend` | -- (Angular) |
 
 ---
 
@@ -397,7 +397,7 @@ This is non-blocking by design. The pipelines use `catchError` and `abortPipelin
 ### Docker Push: "denied: access forbidden"
 
 - Check `DockerHubCrendentials` in Jenkins
-- Verify Docker Hub username matches the image prefix (`ridhaferchichi/`)
+- Verify Docker Hub username matches the image prefix (`ihebayed408/`)
 - Try regenerating a Docker Hub access token
 
 ### Seed job: "ERROR: script not yet approved"
@@ -417,7 +417,7 @@ docker system prune -f
 ### How to change the Docker Hub username
 
 Update in two places:
-1. `Jenkins/jobs.groovy` line: `stringParam('IMAGE_REPO', 'docker.io/ridhaferchichi', ...)`
+1. `Jenkins/jobs.groovy` line: `stringParam('IMAGE_REPO', 'docker.io/ihebayed408', ...)`
 2. Each `Jenkinsfile` `DOCKER_IMAGE` environment variable
 
 Or override at build time via the `IMAGE_REPO` parameter.
