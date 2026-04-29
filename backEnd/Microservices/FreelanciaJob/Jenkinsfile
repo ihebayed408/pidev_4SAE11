@@ -71,7 +71,7 @@ pipeline {
                 dir(SERVICE_DIR) {
                     withCredentials([string(credentialsId: 'SonarQubeToken', variable: 'SONAR_TOKEN')]) {
                         withSonarQubeEnv('SonarQube') {
-                            sh 'chmod +x mvnw && ./mvnw jacoco:report sonar:sonar -Dsonar.projectKey=freelancia-job -Dsonar.projectName=FreelanciaJob -Dsonar.token=$SONAR_TOKEN'
+                            sh 'chmod +x mvnw && ./mvnw jacoco:report sonar:sonar -Dsonar.projectKey=FreelanciaJob -Dsonar.projectName=FreelanciaJob -Dsonar.token=$SONAR_TOKEN'
                         }
                     }
                 }

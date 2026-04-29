@@ -73,7 +73,7 @@ pipeline {
                 dir(TASK_DIR) {
                     withCredentials([string(credentialsId: 'SonarQubeToken', variable: 'SONAR_TOKEN')]) {
                         withSonarQubeEnv('SonarQube') {
-                            sh 'chmod +x mvnw && ./mvnw sonar:sonar -Dsonar.projectKey=task -Dsonar.projectName=Task -Dsonar.token=$SONAR_TOKEN'
+                            sh 'chmod +x mvnw && ./mvnw sonar:sonar -Dsonar.projectKey=Task -Dsonar.projectName=Task -Dsonar.token=$SONAR_TOKEN'
                         }
                     }
                 }

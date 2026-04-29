@@ -73,7 +73,7 @@ pipeline {
                 dir(TICKET_DIR) {
                     withCredentials([string(credentialsId: 'SonarQubeToken', variable: 'SONAR_TOKEN')]) {
                         withSonarQubeEnv('SonarQube') {
-                            sh 'if [ -f mvnw ]; then chmod +x mvnw && ./mvnw sonar:sonar -Dsonar.projectKey=ticket-service -Dsonar.projectName=Ticket-Service -Dsonar.token=$SONAR_TOKEN; else mvn sonar:sonar -Dsonar.projectKey=ticket-service -Dsonar.projectName=Ticket-Service -Dsonar.token=$SONAR_TOKEN; fi'
+                            sh 'if [ -f mvnw ]; then chmod +x mvnw && ./mvnw sonar:sonar -Dsonar.projectKey=Ticket-Service -Dsonar.projectName=Ticket-Service -Dsonar.token=$SONAR_TOKEN; else mvn sonar:sonar -Dsonar.projectKey=Ticket-Service -Dsonar.projectName=Ticket-Service -Dsonar.token=$SONAR_TOKEN; fi'
                         }
                     }
                 }
