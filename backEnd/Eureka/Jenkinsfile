@@ -28,10 +28,19 @@ pipeline {
                     if (params.REPO_URL?.trim()) {
                         checkout([$class: 'GitSCM',
                             branches: [[name: "*/${params.BRANCH}"]],
+                            extensions: [
+                                [$class: 'CloneOption', shallow: true, depth: 1, noTags: true, honorRefspec: true, timeout: 20],
+                            ],
                             userRemoteConfigs: [[url: params.REPO_URL]]
                         ])
                     } else {
-                        checkout scm
+                        checkout([$class: 'GitSCM',
+                            branches: scm.branches,
+                            extensions: [
+                                [$class: 'CloneOption', shallow: true, depth: 1, noTags: true, honorRefspec: true, timeout: 20],
+                            ],
+                            userRemoteConfigs: scm.userRemoteConfigs
+                        ])
                     }
                 }
             }
