@@ -23,6 +23,7 @@ pipeline {
         DOCKER_IMAGE  = 'ihebayed408/eureka'
         DOCKER_TAG    = "${params.IMAGE_TAG?.trim() ? params.IMAGE_TAG.trim() : (env.BUILD_NUMBER ?: 'latest')}"
         JOB_NAME_SAFE = "${env.JOB_NAME?.replaceAll('[^a-zA-Z0-9]', '_') ?: 'eureka'}"
+        PATH          = "/usr/local/bin:${env.PATH}"
     }
 
     stages {
@@ -82,7 +83,7 @@ pipeline {
             when { expression { return params.RUN_SONARQUBE } }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                    timeout(time: 10, unit: 'SECONDS') {
+                    timeout(time: 2, unit: 'MINUTES') {
                         waitForQualityGate abortPipeline: false
                     }
                 }
