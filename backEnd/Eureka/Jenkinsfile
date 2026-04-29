@@ -4,6 +4,10 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout()
+    }
+
     parameters {
         string(name: 'REPO_URL', defaultValue: '', description: 'Git repository URL (leave empty to use job SCM config)')
         string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to build')
@@ -24,6 +28,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                sh 'git config --global http.version HTTP/1.1'
+                sh 'git config --global http.postBuffer 524288000'
                 script {
                     if (params.REPO_URL?.trim()) {
                         checkout([$class: 'GitSCM',
