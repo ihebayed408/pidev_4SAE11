@@ -94,7 +94,7 @@ pipelineJob('orchestration/full-stack-main') {
           branch(branchSpec)
         }
       }
-      scriptPath('Jenkinsfile')
+      scriptPath('Jenkins/Jenkinsfile')
       lightweight(true)
     }
   }

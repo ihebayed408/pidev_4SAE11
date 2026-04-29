@@ -23,7 +23,10 @@ pipeline {
                 checkout([
                     $class: "GitSCM",
                     branches: [[name: "*/${params.BRANCH}"]],
-                    userRemoteConfigs: [[url: params.REPO_URL, credentialsId: env.GITHUB_CREDS_ID]]
+                    userRemoteConfigs: [[url: params.REPO_URL, credentialsId: env.GITHUB_CREDS_ID]],
+                    extensions: [
+                        [$class: "CloneOption", shallow: true, depth: 1, noTags: true, timeout: 30]
+                    ]
                 ])
             }
         }
