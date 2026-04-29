@@ -3,6 +3,10 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout()
+    }
+
     parameters {
         string(name: 'REPO_URL', defaultValue: '', description: 'Git repository URL (leave empty to use job SCM config)')
         string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to build')
@@ -18,19 +22,31 @@ pipeline {
         DOCKER_IMAGE  = 'ihebayed408/user'
         DOCKER_TAG    = "${params.IMAGE_TAG?.trim() ? params.IMAGE_TAG.trim() : (env.BUILD_NUMBER ?: 'latest')}"
         JOB_NAME_SAFE = "${env.JOB_NAME?.replaceAll('[^a-zA-Z0-9]', '_') ?: 'user'}"
+        PATH          = "/usr/local/bin:${env.PATH}"
     }
 
     stages {
         stage('Checkout') {
             steps {
+                sh 'git config --global http.version HTTP/1.1'
+                sh 'git config --global http.postBuffer 524288000'
                 script {
                     if (params.REPO_URL?.trim()) {
                         checkout([$class: 'GitSCM',
                             branches: [[name: "*/${params.BRANCH}"]],
+                            extensions: [
+                                [$class: 'CloneOption', shallow: true, depth: 1, noTags: true, honorRefspec: true, timeout: 20],
+                            ],
                             userRemoteConfigs: [[url: params.REPO_URL]]
                         ])
                     } else {
-                        checkout scm
+                        checkout([$class: 'GitSCM',
+                            branches: scm.branches,
+                            extensions: [
+                                [$class: 'CloneOption', shallow: true, depth: 1, noTags: true, honorRefspec: true, timeout: 20],
+                            ],
+                            userRemoteConfigs: scm.userRemoteConfigs
+                        ])
                     }
                 }
             }
@@ -66,7 +82,7 @@ pipeline {
             when { expression { return params.RUN_SONARQUBE } }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                    timeout(time: 10, unit: 'SECONDS') {
+                    timeout(time: 2, unit: 'MINUTES') {
                         waitForQualityGate abortPipeline: false
                     }
                 }
@@ -84,12 +100,14 @@ pipeline {
         stage('Docker Push') {
             when { expression { return params.PUSH_IMAGE } }
             steps {
-                script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'DockerHubCrendentials') {
-                        def image = docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                        image.push()
-                        image.push('latest')
-                    }
+                withCredentials([usernamePassword(credentialsId: 'DockerHubCrendentials', usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
+                    sh '''
+                        echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
+                        docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+                        docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
+                        docker push ${DOCKER_IMAGE}:latest
+                        docker logout || true
+                    '''
                 }
             }
         }
