@@ -98,11 +98,11 @@ def runService(String jobName) {
         booleanParam(name: "TRIGGER_DOWNSTREAM", value: false)
     ]
 
-    if (child.result == "FAILURE" || child.result == "ABORTED") {
+    if (child.result == "FAILURE") {
         error("${jobName} finished with result ${child.result}")
     }
 
-    if (child.result == "UNSTABLE") {
-        unstable("${jobName} finished UNSTABLE")
+    if (child.result == "UNSTABLE" || child.result == "ABORTED") {
+        unstable("${jobName} finished ${child.result}")
     }
 }
