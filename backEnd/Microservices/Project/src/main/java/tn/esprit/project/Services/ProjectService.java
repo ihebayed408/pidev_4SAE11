@@ -46,7 +46,6 @@ public class ProjectService implements IProjectService{
 
     // ------------------- CRUD -------------------
 
-    @Override
     public Project addProject(Project project) {
         if (project.getStatus() == null) {
             project.setStatus(ProjectStatus.OPEN);

@@ -57,7 +57,7 @@ scrape_configs:
     scrape_interval: 15s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["api-gateway:9090"]
+      - targets: ["host.docker.internal:8078"]
         labels:
           service:  "api-gateway"
           tier:     "edge"
@@ -67,7 +67,7 @@ scrape_configs:
     scrape_interval: 30s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["eureka:9090"]
+      - targets: ["host.docker.internal:8420"]
         labels:
           service:  "eureka"
           tier:     "infrastructure"
@@ -77,7 +77,7 @@ scrape_configs:
     scrape_interval: 30s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["config-server:9090"]
+      - targets: ["host.docker.internal:8888"]
         labels:
           service:  "config-server"
           tier:     "infrastructure"
@@ -87,7 +87,7 @@ scrape_configs:
     scrape_interval: 20s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["keycloak-auth:9090"]
+      - targets: ["host.docker.internal:8079"]
         labels:
           service:  "keycloak-auth"
           tier:     "security"
@@ -101,7 +101,7 @@ scrape_configs:
     scrape_interval: 15s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["user:9090"]
+      - targets: ["host.docker.internal:8090"]
         labels:
           service:  "user"
           tier:     "core"
@@ -111,7 +111,7 @@ scrape_configs:
     scrape_interval: 15s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["project:9090"]
+      - targets: ["host.docker.internal:8084"]
         labels:
           service:  "project"
           tier:     "core"
@@ -121,7 +121,7 @@ scrape_configs:
     scrape_interval: 15s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["offer:9090"]
+      - targets: ["host.docker.internal:8082"]
         labels:
           service:  "offer"
           tier:     "core"
@@ -131,7 +131,7 @@ scrape_configs:
     scrape_interval: 15s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["contract:9090"]
+      - targets: ["host.docker.internal:8083"]
         labels:
           service:  "contract"
           tier:     "core"
@@ -145,7 +145,7 @@ scrape_configs:
     scrape_interval: 20s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["review:9090"]
+      - targets: ["host.docker.internal:8085"]
         labels:
           service:  "review"
           tier:     "supporting"
@@ -155,7 +155,7 @@ scrape_configs:
     scrape_interval: 20s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["portfolio:9090"]
+      - targets: ["host.docker.internal:8086"]
         labels:
           service:  "portfolio"
           tier:     "supporting"
@@ -165,7 +165,7 @@ scrape_configs:
     scrape_interval: 20s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["planning:9090"]
+      - targets: ["host.docker.internal:8081"]
         labels:
           service:  "planning"
           tier:     "supporting"
@@ -175,7 +175,7 @@ scrape_configs:
     scrape_interval: 20s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["task:9090"]
+      - targets: ["host.docker.internal:8091"]
         labels:
           service:  "task"
           tier:     "supporting"
@@ -185,7 +185,7 @@ scrape_configs:
     scrape_interval: 20s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["notification:9090"]
+      - targets: ["host.docker.internal:8087"]
         labels:
           service:  "notification"
           tier:     "supporting"
@@ -195,7 +195,7 @@ scrape_configs:
     scrape_interval: 20s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["gamification:9090"]
+      - targets: ["host.docker.internal:8088"]
         labels:
           service:  "gamification"
           tier:     "supporting"
@@ -205,7 +205,7 @@ scrape_configs:
     scrape_interval: 20s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["meeting:9090"]
+      - targets: ["host.docker.internal:8101"]
         labels:
           service:  "meeting"
           tier:     "supporting"
@@ -215,7 +215,7 @@ scrape_configs:
     scrape_interval: 20s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["chat:9090"]
+      - targets: ["host.docker.internal:8093"]
         labels:
           service:  "chat"
           tier:     "supporting"
@@ -225,7 +225,7 @@ scrape_configs:
     scrape_interval: 20s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["ticket-service:9090"]
+      - targets: ["host.docker.internal:8096"]
         labels:
           service:  "ticket-service"
           tier:     "supporting"
@@ -235,7 +235,7 @@ scrape_configs:
     scrape_interval: 20s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["subcontracting:9090"]
+      - targets: ["host.docker.internal:8110"]
         labels:
           service:  "subcontracting"
           tier:     "supporting"
@@ -245,7 +245,7 @@ scrape_configs:
     scrape_interval: 20s
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["freelancia-job:9090"]
+      - targets: ["host.docker.internal:8097"]
         labels:
           service:  "freelancia-job"
           tier:     "supporting"

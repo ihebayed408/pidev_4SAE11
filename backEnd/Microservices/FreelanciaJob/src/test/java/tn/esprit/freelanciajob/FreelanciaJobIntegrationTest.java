@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
@@ -121,11 +122,17 @@ class FreelanciaJobIntegrationTest {
     // Full lifecycle: CREATE → READ → UPDATE → DELETE
     // ═════════════════════════════════════════════════════════════════════════
 
+    private static final org.springframework.http.HttpHeaders GATEWAY_HEADERS = new org.springframework.http.HttpHeaders();
+    static {
+        GATEWAY_HEADERS.add("X-Internal-Gateway", "true");
+    }
+
     @Test
     @DisplayName("Full job lifecycle: POST → GET → PUT → DELETE")
     void fullJobLifecycle() throws Exception {
         // ── Step 1: Create a job ──────────────────────────────────────────────
         String createBody = mockMvc.perform(post("/jobs/add")
+                        .headers(GATEWAY_HEADERS)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(buildJobRequest())))
                 .andExpect(status().isCreated())
@@ -137,7 +144,7 @@ class FreelanciaJobIntegrationTest {
         assertThat(jobId).isPositive();
 
         // ── Step 2: Read the job ──────────────────────────────────────────────
-        mockMvc.perform(get("/jobs/{id}", jobId))
+        mockMvc.perform(get("/jobs/{id}", jobId).headers(GATEWAY_HEADERS))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(jobId));
 
@@ -151,13 +158,14 @@ class FreelanciaJobIntegrationTest {
         updateReq.setTitle("Senior Backend Developer");
 
         mockMvc.perform(put("/jobs/update/{id}", jobId)
+                        .headers(GATEWAY_HEADERS)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(updateReq)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Senior Backend Developer"));
 
         // ── Step 5: Delete the job ────────────────────────────────────────────
-        mockMvc.perform(delete("/jobs/{id}", jobId))
+        mockMvc.perform(delete("/jobs/{id}", jobId).headers(GATEWAY_HEADERS))
                 .andExpect(status().isNoContent());
 
         assertThat(jobRepository.findById(jobId)).isEmpty();
@@ -177,7 +185,7 @@ class FreelanciaJobIntegrationTest {
         persistJob(JobStatus.FILLED);
 
         // Act & Assert
-        mockMvc.perform(get("/jobs/statistics"))
+        mockMvc.perform(get("/jobs/statistics").headers(GATEWAY_HEADERS))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.OPEN").value(3))
                 .andExpect(jsonPath("$.FILLED").value(1));
@@ -195,7 +203,7 @@ class FreelanciaJobIntegrationTest {
         persistJob(JobStatus.OPEN);
 
         // Act & Assert
-        mockMvc.perform(get("/jobs/list"))
+        mockMvc.perform(get("/jobs/list").headers(GATEWAY_HEADERS))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
     }
@@ -219,6 +227,7 @@ class FreelanciaJobIntegrationTest {
 
         // Act & Assert
         mockMvc.perform(post("/jobs/filter")
+                        .headers(GATEWAY_HEADERS)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(req)))
                 .andExpect(status().isOk())
@@ -233,7 +242,7 @@ class FreelanciaJobIntegrationTest {
     @Test
     @DisplayName("DELETE /jobs/{id} for non-existent job returns 500")
     void deleteNonExistentJob_returns500() throws Exception {
-        org.assertj.core.api.Assertions.assertThatThrownBy(() -> mockMvc.perform(delete("/jobs/{id}", 99999L)))
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> mockMvc.perform(delete("/jobs/{id}", 99999L).headers(GATEWAY_HEADERS)))
                 .hasCauseInstanceOf(RuntimeException.class);
     }
 }

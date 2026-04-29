@@ -5,12 +5,15 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import tn.esprit.freelanciajob.Controller.ApiExceptionHandler;
 import tn.esprit.freelanciajob.Controller.JobController;
 import tn.esprit.freelanciajob.Dto.request.JobRequest;
 import tn.esprit.freelanciajob.Dto.request.JobSearchRequest;
@@ -36,28 +39,32 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Web-layer slice tests for {@link JobController}.
+ * Standalone MockMvc tests for {@link JobController}.
  *
- * Only the controller + Spring MVC infrastructure are loaded.
- * All service dependencies are mocked with {@code @MockitoBean}.
+ * No Spring context is loaded — the controller is instantiated directly
+ * with mocked services, making the tests fast and deterministic.
  */
-@WebMvcTest(JobController.class)
+@ExtendWith(MockitoExtension.class)
 @DisplayName("JobController – Web Layer Tests")
 class JobControllerTest {
 
-    @Autowired
+    @Mock private IJobService           jobService;
+    @Mock private TranslationService    translationService;
+    @Mock private AiJobGeneratorService aiJobGeneratorService;
+    @Mock private JobStatsService       jobStatsService;
+    @Mock private ProfileFitScoreService fitScoreService;
+
+    @InjectMocks
+    private JobController jobController;
+
     private MockMvc mockMvc;
-
-    @MockitoBean private IJobService           jobService;
-    @MockitoBean private TranslationService    translationService;
-    @MockitoBean private AiJobGeneratorService aiJobGeneratorService;
-    @MockitoBean private JobStatsService       jobStatsService;
-    @MockitoBean private ProfileFitScoreService fitScoreService;
-
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(jobController)
+                .setControllerAdvice(new ApiExceptionHandler())
+                .build();
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -105,10 +112,8 @@ class JobControllerTest {
     @Test
     @DisplayName("POST /jobs/add – should return 201 CREATED with saved job")
     void addJob_validRequest_returns201() throws Exception {
-        // Arrange
         when(jobService.addJob(any())).thenReturn(stubJob(1L));
 
-        // Act & Assert
         mockMvc.perform(post("/jobs/add")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest())))
@@ -122,10 +127,8 @@ class JobControllerTest {
     @Test
     @DisplayName("GET /jobs/list – should return 200 with list of job responses")
     void getAll_returns200WithList() throws Exception {
-        // Arrange
         when(jobService.getAllJobResponses()).thenReturn(List.of(stubResponse(1L), stubResponse(2L)));
 
-        // Act & Assert
         mockMvc.perform(get("/jobs/list"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
@@ -134,10 +137,8 @@ class JobControllerTest {
     @Test
     @DisplayName("GET /jobs/list – should return 200 with empty array when no jobs exist")
     void getAll_noJobs_returnsEmptyArray() throws Exception {
-        // Arrange
         when(jobService.getAllJobResponses()).thenReturn(List.of());
 
-        // Act & Assert
         mockMvc.perform(get("/jobs/list"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
@@ -148,24 +149,21 @@ class JobControllerTest {
     @Test
     @DisplayName("GET /jobs/{id} – should return 200 with enriched job response")
     void getById_existingId_returns200() throws Exception {
-        // Arrange
         when(jobService.getJobResponse(1L)).thenReturn(stubResponse(1L));
 
-        // Act & Assert
         mockMvc.perform(get("/jobs/{id}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L));
     }
 
     @Test
-    @DisplayName("GET /jobs/{id} – should return 500 when service throws RuntimeException")
-    void getById_notFound_returns500() throws Exception {
-        // Arrange
+    @DisplayName("GET /jobs/{id} – should return 400 when service throws RuntimeException (handled by ApiExceptionHandler)")
+    void getById_notFound_returns400() throws Exception {
         when(jobService.getJobResponse(99L)).thenThrow(new RuntimeException("Job not found with id: 99"));
 
-        // Act & Assert
-        org.assertj.core.api.Assertions.assertThatThrownBy(() -> mockMvc.perform(get("/jobs/{id}", 99L)))
-                .hasCauseInstanceOf(RuntimeException.class);
+        mockMvc.perform(get("/jobs/{id}", 99L))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Job not found with id: 99"));
     }
 
     // ── PUT /jobs/update/{id} ─────────────────────────────────────────────────
@@ -173,10 +171,8 @@ class JobControllerTest {
     @Test
     @DisplayName("PUT /jobs/update/{id} – should return 200 with updated job")
     void updateJob_validRequest_returns200() throws Exception {
-        // Arrange
         when(jobService.updateJob(eq(1L), any())).thenReturn(stubJob(1L));
 
-        // Act & Assert
         mockMvc.perform(put("/jobs/update/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest())))
@@ -189,10 +185,8 @@ class JobControllerTest {
     @Test
     @DisplayName("DELETE /jobs/{id} – should return 204 NO_CONTENT")
     void deleteJob_existingId_returns204() throws Exception {
-        // Arrange
         doNothing().when(jobService).deleteJob(1L);
 
-        // Act & Assert
         mockMvc.perform(delete("/jobs/{id}", 1L))
                 .andExpect(status().isNoContent());
 
@@ -204,10 +198,8 @@ class JobControllerTest {
     @Test
     @DisplayName("GET /jobs/recommended – should return 200 with recommended jobs for user")
     void getRecommended_returns200() throws Exception {
-        // Arrange
         when(jobService.getRecommendedJobs(5L)).thenReturn(List.of(stubResponse(1L)));
 
-        // Act & Assert
         mockMvc.perform(get("/jobs/recommended").param("userId", "5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1));
@@ -218,15 +210,15 @@ class JobControllerTest {
     @Test
     @DisplayName("POST /jobs/filter – should return 200 paged job results")
     void filterJobs_returns200WithPage() throws Exception {
-        // Arrange
         var page = new PageImpl<>(List.of(stubResponse(1L)));
         when(jobService.filterJobs(any(JobSearchRequest.class))).thenReturn(page);
 
         JobSearchRequest req = new JobSearchRequest();
         req.setPage(0);
         req.setSize(9);
+        req.setSortBy("createdAt");
+        req.setSortDir("desc");
 
-        // Act & Assert
         mockMvc.perform(post("/jobs/filter")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
@@ -239,10 +231,8 @@ class JobControllerTest {
     @Test
     @DisplayName("GET /jobs/statistics – should return 200 with status count map")
     void getStatistics_returns200() throws Exception {
-        // Arrange
         when(jobService.getJobStatistics()).thenReturn(Map.of("OPEN", 5L, "FILLED", 2L));
 
-        // Act & Assert
         mockMvc.perform(get("/jobs/statistics"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.OPEN").value(5));
@@ -253,10 +243,8 @@ class JobControllerTest {
     @Test
     @DisplayName("GET /jobs/client/{id} – should return 200 with client's jobs")
     void getByClientId_returns200() throws Exception {
-        // Arrange
         when(jobService.getJobsByClientId(1L)).thenReturn(List.of(stubResponse(1L)));
 
-        // Act & Assert
         mockMvc.perform(get("/jobs/client/{clientId}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1));

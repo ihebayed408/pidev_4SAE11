@@ -17,6 +17,7 @@ public class GatewayOnlyFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         if (path.startsWith("/actuator/health")
                 || path.startsWith("/actuator/info")
+            || path.startsWith("/actuator/prometheus")
                 || path.startsWith("/v3/api-docs")
                 || path.startsWith("/swagger-ui")
                 || HttpMethod.OPTIONS.matches(request.getMethod())) {
