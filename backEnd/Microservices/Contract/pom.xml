@@ -17,8 +17,8 @@
         <java.version>17</java.version>
         <spring-cloud.version>2023.0.3</spring-cloud.version>
         <!-- Override: Lombok 1.18.30 (managed by Spring Boot parent) crashes on Java 21+;
-             1.18.36 is the first release with full Java 25 support. -->
-        <lombok.version>1.18.36</lombok.version>
+             1.18.42 is needed for full Java 25 support. -->
+        <lombok.version>1.18.42</lombok.version>
         <sonar.host.url>http://localhost:9000</sonar.host.url>
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
@@ -116,11 +116,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.1</version>
                 <configuration>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
