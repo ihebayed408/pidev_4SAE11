@@ -101,12 +101,14 @@ pipeline {
         stage('Docker Push') {
             when { expression { return params.PUSH_IMAGE } }
             steps {
-                script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'DockerHubCrendentials') {
-                        def image = docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                        image.push()
-                        image.push('latest')
-                    }
+                withCredentials([usernamePassword(credentialsId: 'DockerHubCrendentials', usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
+                    sh '''
+                        echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
+                        docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+                        docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
+                        docker push ${DOCKER_IMAGE}:latest
+                        docker logout || true
+                    '''
                 }
             }
         }
